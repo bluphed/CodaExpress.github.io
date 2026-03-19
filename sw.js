@@ -12,14 +12,15 @@ const urlsToCache = [
 
 self.addEventListener('install', event => {
   console.log('Service Worker instalándose...');
-  self.skipWaiting(); // Activar inmediatamente
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Cache abierto');
-        return cache.addAll(urlsToCache).catch(error => {
-          console.error('Error cacheando archivos:', error);
-        });
+        console.log('Abriendo caché...');
+        return cache.addAll(urlsToCache);
+      })
+      .catch(error => {
+        console.error('Error al cachear:', error);
       })
   );
 });
@@ -31,18 +32,13 @@ self.addEventListener('fetch', event => {
         if (response) {
           return response;
         }
-        return fetch(event.request).catch(() => {
-          // Si falla la red y no está en caché, muestra página offline
-          if (event.request.mode === 'navigate') {
-            return caches.match(BASE_PATH + '/index.html');
-          }
-        });
+        return fetch(event.request);
       })
   );
 });
 
 self.addEventListener('activate', event => {
-  console.log('Service Worker activado!');
+  console.log('Service Worker activado');
   const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
     caches.keys().then(cacheNames => {
@@ -55,7 +51,6 @@ self.addEventListener('activate', event => {
         })
       );
     }).then(() => {
-      // Tomar control de todas las páginas abiertas inmediatamente
       return self.clients.claim();
     })
   );
