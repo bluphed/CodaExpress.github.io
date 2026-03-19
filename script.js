@@ -1,74 +1,70 @@
-let mapa;
-let restauranteMarker = null;
-let clienteMarker = null;
-let modo = "";
-let ultimoPrecio = 0;
-let ultimaDistancia = 0;
-
-function initMap() {
-    mapa = new google.maps.Map(document.getElementById("map"), {
-        zoom: 14,
-        center: { lat: -0.22, lng: -78.51 }
-    });
+// Nueva función para confirmar ubicación desde link de WhatsApp
+function confirmarUbicacionLink() {
+    let link = document.getElementById("ubicacionLink").value;
     
-    setTimeout(cargarRestaurante, 500);
+    if (!link) {
+        alert("❌ Por favor pega un link de ubicación");
+        return;
+    }
     
-    mapa.addListener("click", function(event) {
-        if (modo === "restaurante") {
-            if (restauranteMarker) restauranteMarker.setMap(null);
-            restauranteMarker = new google.maps.Marker({
-                position: event.latLng,
-                map: mapa,
-                label: "R"
-            });
-            localStorage.setItem("restaurante", JSON.stringify({
-                lat: event.latLng.lat(),
-                lng: event.latLng.lng()
-            }));
-            modo = "";
-            alert("✅ Local marcado");
-        } 
-        else if (modo === "cliente") {
-            if (clienteMarker) clienteMarker.setMap(null);
-            clienteMarker = new google.maps.Marker({
-                position: event.latLng,
-                map: mapa,
-                label: "C"
-            });
-            modo = "";
-            alert("✅ Cliente marcado");
-        }
-    });
+    // Intentar extraer coordenadas del link (formato Google Maps)
+    // Esto es simplificado, en realidad necesitarías una API para geocodificar
+    alert("🔍 Función en desarrollo: Se integrará con API de geocodificación");
+    
+    // Por ahora, abrimos el link en una nueva pestaña
+    window.open(link, "_blank");
 }
 
-function modoRestaurante() {
-    modo = "restaurante";
-    alert("📍 Toca el mapa para marcar el local");
-}
-
-function modoCliente() {
-    modo = "cliente";
-    alert("👤 Toca el mapa para marcar el cliente");
-}
-
-function cargarRestaurante() {
-    let guardado = localStorage.getItem("restaurante");
-    if (guardado && mapa) {
-        try {
-            let ubicacion = JSON.parse(guardado);
-            if (restauranteMarker) restauranteMarker.setMap(null);
-            restauranteMarker = new google.maps.Marker({
-                position: ubicacion,
-                map: mapa,
-                label: "R"
-            });
-            mapa.setCenter(ubicacion);
-        } catch (e) {
-            console.error("Error al cargar local", e);
-        }
+// Nueva función para cambiar local desde el selector
+function cambiarLocalDesdeSelector() {
+    let selector = document.getElementById("selectorLocal");
+    let valor = selector.value;
+    
+    if (valor) {
+        let coordenadas = valor.split(",");
+        let lat = parseFloat(coordenadas[0]);
+        let lng = parseFloat(coordenadas[1]);
+        seleccionarLocal(lat, lng);
     }
 }
 
+// Modificar la función enviarWhatsApp para incluir los nuevos datos
+function enviarWhatsApp() {
+    if (ultimoPrecio === 0) {
+        alert("❌ Primero calcula el costo");
+        return;
+    }
+    
+    // Obtener datos del cliente
+    let nombre = document.getElementById("nombreCliente").value || "No especificado";
+    let celular = document.getElementById("celularCliente").value || "No especificado";
+    let referencia = document.getElementById("referenciaCliente").value || "No especificado";
+    let ubicacionLink = document.getElementById("ubicacionLink").value || "No proporcionado";
+    
+    let numero = "593997020710";
+    let mensaje = "🚚 *NUEVO PEDIDO DELIVERY*\n\n" +
+                 "━━━━━━━━━━━━━━━━\n\n" +
+                 "📍 *DISTANCIA Y COSTO*\n" +
+                 "📏 Distancia: " + ultimaDistancia.toFixed(2) + " km\n" +
+                 "💰 Costo: $" + ultimoPrecio.toFixed(2) + "\n\n" +
+                 "━━━━━━━━━━━━━━━━\n\n" +
+                 "👤 *DATOS DEL CLIENTE*\n" +
+                 "• Nombre: " + nombre + "\n" +
+                 "• Celular: " + celular + "\n" +
+                 "• Referencia: " + referencia + "\n\n" +
+                 "━━━━━━━━━━━━━━━━\n\n" +
+                 "📍 *UBICACIÓN*\n" +
+                 "Link: " + ubicacionLink + "\n\n" +
+                 "━━━━━━━━━━━━━━━━\n\n" +
+                 "✅ _Pedido generado desde la app_";
+    
+    let url = "https://api.whatsapp.com/send?phone=" + numero + 
+              "&text=" + encodeURIComponent(mensaje);
+    
+    window.open(url, "_blank");
+}
+
+// Modificar la función calcular para mostrar resultado más bonito
 function calcular() {
     if (!restauranteMarker || !clienteMarker) {
         alert("❌ Debes marcar local y cliente");
@@ -86,50 +82,13 @@ function calcular() {
     ultimoPrecio = total;
     ultimaDistancia = distancia;
     
+    // Mostrar resultado con nuevo formato
     document.getElementById("resultado").innerHTML = 
-        "📏 Distancia: " + distancia.toFixed(2) + " km<br><br>" +
-        "💰 Costo: $" + total.toFixed(2);
-}
-
-function enviarWhatsApp() {
-    if (ultimoPrecio === 0) {
-        alert("❌ Primero calcula el costo");
-        return;
-    }
-    
-    let numero = "593997020710";
-    let mensaje = "🚚 Pedido Delivery\n\n" +
-                 "📏 Distancia: " + ultimaDistancia.toFixed(2) + " km\n" +
-                 "💰 Costo: $" + ultimoPrecio.toFixed(2) + "\n\n" +
-                 "👤 Nombre cliente:\n📱 Celular:\n📍 Dirección:";
-    
-    window.open("https://api.whatsapp.com/send?phone=" + numero + 
-                "&text=" + encodeURIComponent(mensaje), "_blank");
-}
-
-function abrirMenu() {
-    document.getElementById("menuLateral").style.left = "0";
-}
-
-function cerrarMenu() {
-    document.getElementById("menuLateral").style.left = "-250px";
-}
-
-function toggleLocales() {
-    let lista = document.getElementById("listaLocales");
-    lista.style.display = lista.style.display === "none" ? "block" : "none";
-}
-
-function seleccionarLocal(lat, lng) {
-    let ubicacion = { lat: lat, lng: lng };
-    if (restauranteMarker) restauranteMarker.setMap(null);
-    restauranteMarker = new google.maps.Marker({
-        position: ubicacion,
-        map: mapa,
-        label: "R"
-    });
-    mapa.setCenter(ubicacion);
-    localStorage.setItem("restaurante", JSON.stringify(ubicacion));
-    cerrarMenu();
-    alert("✅ Local seleccionado");
+        '<div class="result-active">' +
+        '<i class="fas fa-check-circle" style="color:#27ae60; font-size:36px;"></i>' +
+        '<div class="distancia">📏 ' + distancia.toFixed(2) + ' km</div>' +
+        '<div class="costo">💰 $' + total.toFixed(2) + '</div>' +
+        '<p style="color:#7f8c8d; font-size:14px; margin-top:10px;">' +
+        'Incluye: costo base $1 + $0.50 por km</p>' +
+        '</div>';
 }
