@@ -3,116 +3,233 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora Delivery</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Delivery Express - Calculadora de Costos</title>
+    
+    <!-- Tailwind CSS para el diseño -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons para los iconos -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        #map {
+            height: 400px;
+            width: 100%;
+            border-radius: 0.75rem;
+        }
+        .custom-shadow {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+    </style>
 </head>
-<body>
-    <!-- Botón menú -->
-    <div class="menuBtn" onclick="abrirMenu()">
-        <i class="fas fa-bars"></i>
-    </div>
-    
-    <!-- Menú lateral -->
-    <div id="menuLateral" class="menuLateral">
-        <h3><i class="fas fa-store"></i> Menú</h3>
-        <p onclick="toggleLocales()"><i class="fas fa-map-marker-alt"></i> Locales disponibles ▼</p>
-        <div id="listaLocales" style="display:none;padding-left:10px;">
-            <p onclick="seleccionarLocal(-0.25305, -79.1751)">
-                <i class="fas fa-ice-cream"></i> 🍦 La Cremita – Santo Domingo
-            </p>
-            <p onclick="seleccionarLocal(-0.180653, -78.467834)">
-                <i class="fas fa-pizza"></i> 🍕 Pizza Express – Quito
-            </p>
-        </div>
-        <p onclick="cerrarMenu()"><i class="fas fa-times"></i> Cerrar menú</p>
-    </div>
-    
-    <!-- Contenedor principal -->
-    <div class="container">
-        <!-- Header con título -->
-        <div class="header">
-            <h1><i class="fas fa-truck"></i> Calculadora de Delivery</h1>
-        </div>
-        
-        <!-- Botones de acción rápida -->
-        <div class="action-buttons">
-            <button class="btn-primary" onclick="modoRestaurante()">
-                <i class="fas fa-store-alt"></i> Marcar Local
-            </button>
-            <button class="btn-primary" onclick="modoCliente()">
-                <i class="fas fa-user"></i> Marcar Cliente
-            </button>
-        </div>
-        
-        <!-- Mapa -->
-        <div class="map-container">
-            <div id="map"></div>
-            <div class="map-hint">
-                <i class="fas fa-info-circle"></i> Haz clic en el mapa para marcar ubicaciones
+<body class="bg-slate-50 font-sans text-slate-900">
+
+    <div class="max-w-4xl mx-auto p-4 md:p-8">
+        <!-- Encabezado -->
+        <header class="flex items-center justify-between mb-8">
+            <div class="flex items-center gap-2">
+                <div class="bg-emerald-500 p-2 rounded-lg text-white">
+                    <i data-lucide="truck"></i>
+                </div>
+                <h1 class="text-2xl font-bold tracking-tight">Coda Express</h1>
             </div>
-        </div>
-        
-        <!-- Sección de datos del cliente (NUEVO) -->
-        <div class="client-section">
-            <h3><i class="fas fa-user-circle"></i> Datos del cliente</h3>
-            
-            <div class="input-group">
-                <label><i class="fas fa-user"></i> Nombre del cliente:</label>
-                <input type="text" id="nombreCliente" placeholder="Ej: Juan Pérez">
-            </div>
-            
-            <div class="input-group">
-                <label><i class="fas fa-phone"></i> Número de celular:</label>
-                <input type="tel" id="celularCliente" placeholder="Ej: 0991234567">
-            </div>
-            
-            <div class="input-group">
-                <label><i class="fas fa-map-pin"></i> Referencia de ubicación:</label>
-                <input type="text" id="referenciaCliente" placeholder="Ej: Casa blanca esquinera">
-            </div>
-            
-            <div class="input-group">
-                <label><i class="fab fa-whatsapp"></i> Pegar link de ubicación (WhatsApp):</label>
-                <div class="link-input-group">
-                    <input type="text" id="ubicacionLink" placeholder="https://maps.app.goo.gl/...">
-                    <button class="btn-confirm" onclick="confirmarUbicacionLink()">
-                        <i class="fas fa-check"></i> Confirmar
-                    </button>
+            <span class="text-xs font-medium bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full">En línea</span>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Columna Izquierda: Mapa y Selección -->
+            <div class="space-y-6">
+                <div class="bg-white p-4 rounded-2xl custom-shadow">
+                    <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                        <i data-lucide="map-pin" class="text-emerald-500"></i>
+                        Ubicación del Pedido
+                    </h2>
+                    <div id="map" class="bg-slate-200 flex items-center justify-center">
+                        <p class="text-slate-500 text-sm p-4 text-center">Cargando mapa...</p>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-2 italic">* Haz clic en el mapa para marcar el punto de entrega.</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl custom-shadow space-y-4">
+                    <h2 class="text-lg font-semibold flex items-center gap-2">
+                        <i data-lucide="store" class="text-emerald-500"></i>
+                        Seleccionar Local
+                    </h2>
+                    <select id="localSelect" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
+                        <option value="cremita">La Cremita – Santo Domingo</option>
+                        <option value="kfc">KFC Paseo Shopping</option>
+                        <option value="custom">Ubicación Personalizada</option>
+                    </select>
                 </div>
             </div>
-        </div>
-        
-        <!-- Sección de cambio de local -->
-        <div class="local-section">
-            <h4><i class="fas fa-store"></i> Cambiar Local (Opcional)</h4>
-            <select id="selectorLocal" onchange="cambiarLocalDesdeSelector()">
-                <option value="">Seleccionar local...</option>
-                <option value="-0.25305,-79.1751">🍦 La Cremita – Santo Domingo</option>
-                <option value="-0.180653,-78.467834">🍕 Pizza Express – Quito</option>
-            </select>
-        </div>
-        
-        <!-- Botón calcular -->
-        <button class="btn-calculate" onclick="calcular()">
-            <i class="fas fa-calculator"></i> Calcular costo
-        </button>
-        
-        <!-- Resultado -->
-        <div id="resultado" class="result-card">
-            <div class="result-placeholder">
-                <i class="fas fa-map-marked-alt"></i>
-                <p>Esperando cálculo...</p>
+
+            <!-- Columna Derecha: Datos y Resultado -->
+            <div class="space-y-6">
+                <div class="bg-white p-6 rounded-2xl custom-shadow space-y-4">
+                    <h2 class="text-lg font-semibold flex items-center gap-2">
+                        <i data-lucide="user" class="text-emerald-500"></i>
+                        Datos del Cliente
+                    </h2>
+                    <input type="text" id="nombre" placeholder="Nombre del cliente" class="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none">
+                    <input type="text" id="telefono" placeholder="Teléfono" class="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none">
+                    <textarea id="direccion" placeholder="Dirección exacta" class="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none h-24"></textarea>
+                </div>
+
+                <div id="resultadoCard" class="bg-emerald-600 p-6 rounded-2xl text-white custom-shadow hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-emerald-100 uppercase text-xs font-bold tracking-widest">Costo Estimado</span>
+                        <i data-lucide="calculator"></i>
+                    </div>
+                    <div class="text-4xl font-bold mb-2" id="costoFinal">$0.00</div>
+                    <p class="text-sm text-emerald-100" id="distanciaTexto">Distancia: 0.0 km</p>
+                    
+                    <button onclick="enviarWhatsApp()" class="w-full mt-6 bg-white text-emerald-600 font-bold py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-emerald-50 transition-colors">
+                        <i data-lucide="message-circle"></i>
+                        Enviar por WhatsApp
+                    </button>
+                </div>
+
+                <button onclick="calcular()" class="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 hover:bg-slate-800 transition-all shadow-lg active:scale-95">
+                    <i data-lucide="navigation"></i>
+                    Calcular Entrega
+                </button>
             </div>
         </div>
-        
-        <!-- Botón WhatsApp -->
-        <button class="btn-whatsapp" onclick="enviarWhatsApp()">
-            <i class="fab fa-whatsapp"></i> Enviar pedido por WhatsApp
-        </button>
     </div>
 
-    <script src="script.js"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDFR0mPU-jz-crPgioPus5UEdfeEZ90yk4&libraries=geometry&callback=initMap" async defer></script>
+    <!-- Scripts de Google Maps -->
+    <!-- REEMPLAZA "TU_API_KEY" con tu clave real de Google Cloud Console -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDFR0mPU-jz-crPgioPus5UEdfeEZ90yk4&libraries=geometry,places&callback=initMap" async defer></script>
+
+    <script>
+        let map;
+        let markerRestaurante;
+        let markerCliente;
+        let restaurantePos = { lat: -0.245197, lng: -79.158230 }; // Santo Domingo
+        let clientePos = null;
+
+        const LOCALES = {
+            cremita: { lat: -0.245197, lng: -79.158230, nombre: "La Cremita" },
+            kfc: { lat: -0.248731, lng: -79.1617479, nombre: "KFC Paseo Shopping" }
+        };
+
+        function initMap() {
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: restaurantePos,
+                zoom: 14,
+                styles: [
+                    { "featureType": "poi", "stylers": [{ "visibility": "off" }] }
+                ]
+            });
+
+            // Marcador inicial del restaurante
+            markerRestaurante = new google.maps.Marker({
+                position: restaurantePos,
+                map: map,
+                title: "Local",
+                icon: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png'
+            });
+
+            // Evento clic en el mapa
+            map.addListener("click", (e) => {
+                setCliente(e.latLng);
+            });
+
+            // Cambio de local
+            document.getElementById('localSelect').addEventListener('change', function() {
+                const val = this.value;
+                if (LOCALES[val]) {
+                    restaurantePos = LOCALES[val];
+                    markerRestaurante.setPosition(restaurantePos);
+                    map.panTo(restaurantePos);
+                }
+            });
+
+            // Inicializar iconos
+            lucide.createIcons();
+        }
+
+        function setCliente(latLng) {
+            if (markerCliente) {
+                markerCliente.setPosition(latLng);
+            } else {
+                markerCliente = new google.maps.Marker({
+                    position: latLng,
+                    map: map,
+                    title: "Cliente",
+                    icon: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png'
+                });
+            }
+            clientePos = { lat: latLng.lat(), lng: latLng.lng() };
+            
+            // Obtener dirección automáticamente
+            const geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ location: latLng }, (results, status) => {
+                if (status === "OK" && results[0]) {
+                    document.getElementById('direccion').value = results[0].formatted_address;
+                }
+            });
+        }
+
+        function calcular() {
+            if (!clientePos) {
+                alert("Por favor, marca la ubicación del cliente en el mapa.");
+                return;
+            }
+
+            const dist = google.maps.geometry.spherical.computeDistanceBetween(
+                new google.maps.LatLng(restaurantePos.lat, restaurantePos.lng),
+                new google.maps.LatLng(clientePos.lat, clientePos.lng)
+            );
+
+            const km = dist / 1000;
+            let total = 0;
+
+            // Lógica de cobro
+            if (km < 1.5) {
+                total = 1.90;
+            } else {
+                const extraKm = km - 1.5;
+                total = 2.50 + (extraKm * 0.50);
+            }
+
+            // Redondear a múltiplos de 0.25
+            total = Math.ceil(total * 4) / 4;
+
+            // Tope de 4.50 si es menos de 15km
+            if (km < 15 && total > 4.50) total = 4.50;
+
+            // Mostrar resultados
+            document.getElementById('costoFinal').innerText = `$${total.toFixed(2)}`;
+            document.getElementById('distanciaTexto').innerText = `Distancia: ${km.toFixed(2)} km`;
+            document.getElementById('resultadoCard').classList.remove('hidden');
+            
+            // Scroll suave al resultado
+            document.getElementById('resultadoCard').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function enviarWhatsApp() {
+            const nombre = document.getElementById('nombre').value || "Cliente";
+            const tel = document.getElementById('telefono').value || "No provisto";
+            const dir = document.getElementById('direccion').value || "Ver mapa";
+            const costo = document.getElementById('costoFinal').innerText;
+            const dist = document.getElementById('distanciaTexto').innerText;
+            
+            const localName = document.getElementById('localSelect').options[document.getElementById('localSelect').selectedIndex].text;
+
+            const mapsLink = `https://www.google.com/maps?q=${clientePos.lat},${clientePos.lng}`;
+
+            const mensaje = `*NUEVO PEDIDO DELIVERY*%0A%0A` +
+                `*Local:* ${localName}%0A` +
+                `*Cliente:* ${nombre}%0A` +
+                `*Teléfono:* ${tel}%0A` +
+                `*Dirección:* ${dir}%0A%0A` +
+                `*Costo:* ${costo}%0A` +
+                `*${dist}*%0A%0A` +
+                `*Ubicación:* ${mapsLink}`;
+
+            window.open(`https://wa.me/593959698463?text=${mensaje}`, '_blank');
+        }
+    </script>
 </body>
 </html>
