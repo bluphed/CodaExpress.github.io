@@ -8,7 +8,6 @@ const urlsToCache = [
   'https://maps.googleapis.com/maps/api/js?key=AIzaSyDFR0mPU-jz-crPgioPus5UEdfeEZ90yk4&libraries=geometry,places'
 ];
 
-// Instalación del service worker
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -19,22 +18,18 @@ self.addEventListener('install', event => {
   );
 });
 
-// Interceptar peticiones
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        // Devuelve del cache si existe
         if (response) {
           return response;
         }
-        // Si no, busca en la red
         return fetch(event.request);
       })
   );
 });
 
-// Actualizar cache
 self.addEventListener('activate', event => {
   const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
