@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Delivery Express - Calculadora de Costos</title>
     
-    <!-- Tailwind CSS para el diseño -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Lucide Icons para los iconos -->
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
@@ -16,16 +16,11 @@
             height: 400px;
             width: 100%;
             border-radius: 0.75rem;
-            touch-action: pan-x pan-y; /* Permite movimiento táctil */
-            -webkit-overflow-scrolling: touch; /* Mejora scroll en iOS */
+            touch-action: pan-x pan-y;
+            -webkit-overflow-scrolling: touch;
         }
         .custom-shadow {
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        }
-        .map-container {
-            position: relative;
-            overflow: hidden;
-            touch-action: none; /* Mejora interacción táctil */
         }
         .gesture-hint {
             position: absolute;
@@ -43,19 +38,17 @@
             pointer-events: none;
             backdrop-filter: blur(5px);
         }
-        /* Mejora para táctil */
         .btn-touch {
             min-height: 48px;
             touch-action: manipulation;
         }
-        /* Animación de carga */
         .loading {
             display: inline-block;
             width: 20px;
             height: 20px;
             border: 3px solid rgba(0,0,0,.1);
             border-radius: 50%;
-            border-top-color: #10b981;
+            border-top-color: #DE440D;
             animation: spin 1s ease-in-out infinite;
         }
         @keyframes spin {
@@ -69,61 +62,59 @@
         <!-- Encabezado -->
         <header class="flex items-center justify-between mb-8">
             <div class="flex items-center gap-2">
-                <div class="bg-emerald-500 p-2 rounded-lg text-white">
+                <div class="bg-[#DE440D] p-2 rounded-lg text-white">
                     <i data-lucide="truck"></i>
                 </div>
                 <h1 class="text-2xl font-bold tracking-tight">Coda Express</h1>
             </div>
-            <span class="text-xs font-medium bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full">En línea</span>
+            <span class="text-xs font-medium bg-orange-100 text-[#DE440D] px-2 py-1 rounded-full">En línea</span>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- Columna Izquierda: Mapa y Selección -->
+            <!-- Columna Izquierda -->
             <div class="space-y-6">
                 <div class="bg-white p-4 rounded-2xl custom-shadow">
                     <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
-                        <i data-lucide="map-pin" class="text-emerald-500"></i>
+                        <i data-lucide="map-pin" class="text-[#DE440D]"></i>
                         Ubicación del Pedido
                     </h2>
                     
-                    <!-- NUEVO: Campo para link de Google Maps -->
+                    <!-- Link de Google Maps -->
                     <div class="mb-4 p-3 bg-slate-50 rounded-xl">
                         <label class="block text-sm font-medium text-slate-700 mb-2">
                             <i data-lucide="link" class="inline w-4 h-4 mr-1"></i>
                             Link de Google Maps
                         </label>
                         <div class="flex gap-2">
-                            <input type="text" id="mapsLink" placeholder="Pega el link aquí (corto o largo)..." 
-                                   class="flex-1 p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none text-sm">
+                            <input type="text" id="mapsLink" placeholder="Pega el link aquí..." 
+                                   class="flex-1 p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#DE440D] outline-none text-sm">
                             <button onclick="procesarLinkMaps()" 
-                                    class="bg-emerald-500 text-white px-4 py-2 rounded-xl hover:bg-emerald-600 transition-colors touch:bg-emerald-700 btn-touch">
+                                    class="bg-[#DE440D] text-white px-4 py-2 rounded-xl hover:bg-[#b5360a] transition-colors btn-touch">
                                 <i data-lucide="search" class="w-5 h-5"></i>
                             </button>
                         </div>
-                        <p class="text-xs text-slate-400 mt-1">Ej: https://maps.app.goo.gl/... o https://goo.gl/maps/...</p>
                     </div>
                     
-                    <!-- Contenedor del mapa con hint táctil -->
+                    <!-- Mapa -->
                     <div class="map-container relative">
                         <div id="map" class="bg-slate-200"></div>
                         <div class="gesture-hint">
                             <i data-lucide="move" class="w-4 h-4"></i>
-                            <span>Usa dos dedos para mover el mapa</span>
+                            <span>Desliza para mover el mapa</span>
                         </div>
                     </div>
                     
-                    <p class="text-xs text-slate-400 mt-2 italic flex items-center gap-1">
-                        <i data-lucide="info" class="w-3 h-3"></i>
-                        * Toca el mapa para marcar el punto de entrega o pega un link de Google Maps
+                    <p class="text-xs text-slate-400 mt-2 italic">
+                        * Toca el mapa para marcar el punto de entrega
                     </p>
                 </div>
 
                 <div class="bg-white p-6 rounded-2xl custom-shadow space-y-4">
                     <h2 class="text-lg font-semibold flex items-center gap-2">
-                        <i data-lucide="store" class="text-emerald-500"></i>
+                        <i data-lucide="store" class="text-[#DE440D]"></i>
                         Seleccionar Local
                     </h2>
-                    <select id="localSelect" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-emerald-500 outline-none transition-all btn-touch">
+                    <select id="localSelect" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-[#DE440D] outline-none btn-touch">
                         <option value="cremita">La Cremita – Santo Domingo</option>
                         <option value="kfc">KFC Paseo Shopping</option>
                         <option value="custom">📍 Usar mi ubicación</option>
@@ -131,31 +122,31 @@
                 </div>
             </div>
 
-            <!-- Columna Derecha: Datos y Resultado -->
+            <!-- Columna Derecha -->
             <div class="space-y-6">
                 <div class="bg-white p-6 rounded-2xl custom-shadow space-y-4">
                     <h2 class="text-lg font-semibold flex items-center gap-2">
-                        <i data-lucide="user" class="text-emerald-500"></i>
+                        <i data-lucide="user" class="text-[#DE440D]"></i>
                         Datos del Cliente
                     </h2>
                     <input type="text" id="nombre" placeholder="Nombre del cliente" 
-                           class="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none btn-touch">
+                           class="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#DE440D] outline-none btn-touch">
                     <input type="tel" id="telefono" placeholder="Teléfono" 
-                           class="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none btn-touch">
+                           class="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#DE440D] outline-none btn-touch">
                     <textarea id="direccion" placeholder="Dirección exacta" 
-                              class="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none h-24"></textarea>
+                              class="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#DE440D] outline-none h-24"></textarea>
                 </div>
 
-                <div id="resultadoCard" class="bg-emerald-600 p-6 rounded-2xl text-white custom-shadow hidden">
+                <div id="resultadoCard" class="bg-[#DE440D] p-6 rounded-2xl text-white custom-shadow hidden">
                     <div class="flex justify-between items-center mb-4">
-                        <span class="text-emerald-100 uppercase text-xs font-bold tracking-widest">Costo Estimado</span>
+                        <span class="text-orange-100 uppercase text-xs font-bold tracking-widest">Costo Estimado</span>
                         <i data-lucide="calculator"></i>
                     </div>
                     <div class="text-4xl font-bold mb-2" id="costoFinal">$0.00</div>
-                    <p class="text-sm text-emerald-100" id="distanciaTexto">Distancia: 0.0 km</p>
-                    <p class="text-xs text-emerald-200 mt-1" id="detalleCosto"></p>
+                    <p class="text-sm text-orange-100" id="distanciaTexto">Distancia: 0.0 km</p>
+                    <p class="text-xs text-orange-200 mt-1" id="detalleCosto"></p>
                     
-                    <button onclick="enviarWhatsApp()" class="w-full mt-6 bg-white text-emerald-600 font-bold py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-emerald-50 transition-colors btn-touch active:scale-95">
+                    <button onclick="enviarWhatsApp()" class="w-full mt-6 bg-white text-[#DE440D] font-bold py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-orange-50 transition-colors btn-touch">
                         <i data-lucide="message-circle"></i>
                         Enviar por WhatsApp
                     </button>
@@ -169,40 +160,43 @@
         </div>
     </div>
 
-    <!-- Scripts de Google Maps -->
+    <!-- Google Maps -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDFR0mPU-jz-crPgioPus5UEdfeEZ90yk4&libraries=geometry,places&callback=initMap" async defer></script>
 
     <script>
+        // ============================================
+        // VARIABLES GLOBALES
+        // ============================================
         let map;
         let markerRestaurante;
         let markerCliente;
         let restaurantePos = { lat: -0.245197, lng: -79.158230 }; // Santo Domingo
         let clientePos = null;
         let geocoder;
-        let isLoading = false;
 
         const LOCALES = {
             cremita: { lat: -0.245197, lng: -79.158230, nombre: "La Cremita" },
             kfc: { lat: -0.248731, lng: -79.1617479, nombre: "KFC Paseo Shopping" }
         };
 
+        // ============================================
+        // INICIALIZACIÓN DEL MAPA
+        // ============================================
         function initMap() {
             map = new google.maps.Map(document.getElementById("map"), {
                 center: restaurantePos,
                 zoom: 14,
-                gestureHandling: 'greedy', // Permite mover el mapa con un dedo en móvil
+                gestureHandling: 'greedy', // Móvil: 1 dedo
                 zoomControl: true,
                 mapTypeControl: false,
                 streetViewControl: false,
                 fullscreenControl: true,
-                styles: [
-                    { "featureType": "poi", "stylers": [{ "visibility": "off" }] }
-                ]
+                styles: [{ "featureType": "poi", "stylers": [{ "visibility": "off" }] }]
             });
 
             geocoder = new google.maps.Geocoder();
 
-            // Marcador inicial del restaurante
+            // Marcador del restaurante
             markerRestaurante = new google.maps.Marker({
                 position: restaurantePos,
                 map: map,
@@ -210,7 +204,7 @@
                 icon: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png'
             });
 
-            // Evento clic en el mapa
+            // Click en mapa = marcar cliente
             map.addListener("click", (e) => {
                 setCliente(e.latLng);
             });
@@ -240,11 +234,49 @@
                 }
             });
 
-            // Inicializar iconos
+            // Inicializar iconos de Lucide
             lucide.createIcons();
         }
 
-        // NUEVA FUNCIÓN: Procesar link de Google Maps
+        // ============================================
+        // FUNCIÓN: Marcar cliente en el mapa
+        // ============================================
+        function setCliente(latLng) {
+            if (markerCliente) {
+                markerCliente.setPosition(latLng);
+            } else {
+                markerCliente = new google.maps.Marker({
+                    position: latLng,
+                    map: map,
+                    title: "Cliente",
+                    icon: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
+                    draggable: true
+                });
+
+                markerCliente.addListener('dragend', function() {
+                    const pos = markerCliente.getPosition();
+                    clientePos = { lat: pos.lat(), lng: pos.lng() };
+                    actualizarDireccion(pos);
+                });
+            }
+            clientePos = { lat: latLng.lat(), lng: latLng.lng() };
+            actualizarDireccion(latLng);
+        }
+
+        // ============================================
+        // FUNCIÓN: Obtener dirección desde coordenadas
+        // ============================================
+        function actualizarDireccion(latLng) {
+            geocoder.geocode({ location: latLng }, (results, status) => {
+                if (status === "OK" && results[0]) {
+                    document.getElementById('direccion').value = results[0].formatted_address;
+                }
+            });
+        }
+
+        // ============================================
+        // FUNCIÓN: Procesar link de Google Maps
+        // ============================================
         function procesarLinkMaps() {
             const link = document.getElementById('mapsLink').value.trim();
             if (!link) {
@@ -252,29 +284,21 @@
                 return;
             }
 
-            // Mostrar indicador de carga
             const btn = event.currentTarget;
             const originalHtml = btn.innerHTML;
             btn.innerHTML = '<span class="loading"></span>';
             btn.disabled = true;
 
-            // Extraer coordenadas del link
             extractCoordinatesFromLink(link)
                 .then(coords => {
                     if (coords) {
-                        // Crear LatLng object
                         const latLng = new google.maps.LatLng(coords.lat, coords.lng);
-                        
-                        // Centrar mapa
                         map.setCenter(latLng);
                         map.setZoom(18);
-                        
-                        // Marcar cliente
                         setCliente(latLng);
-                        
                         document.getElementById('mapsLink').value = '';
                     } else {
-                        alert("No se pudieron extraer coordenadas del link. Asegúrate que sea un link válido de Google Maps");
+                        alert("No se pudieron extraer coordenadas del link");
                     }
                 })
                 .catch(error => {
@@ -286,30 +310,19 @@
                 });
         }
 
-        // Función para extraer coordenadas de diferentes tipos de links
         function extractCoordinatesFromLink(link) {
             return new Promise((resolve, reject) => {
-                // Intentar diferentes formatos de Google Maps
-                
-                // Formato: https://maps.app.goo.gl/...
                 if (link.includes('goo.gl') || link.includes('maps.app.goo')) {
-                    // Para links cortos, necesitamos resolver la redirección
                     fetch(link, { method: 'HEAD', redirect: 'follow' })
-                        .then(response => {
-                            const finalUrl = response.url;
-                            return extractFromUrl(finalUrl);
-                        })
-                        .then(resolve)
+                        .then(response => resolve(extractFromUrl(response.url)))
                         .catch(reject);
                 } else {
-                    // Intentar extraer directamente de la URL
                     resolve(extractFromUrl(link));
                 }
             });
         }
 
         function extractFromUrl(url) {
-            // Formato: @lat,lng o ?q=lat,lng o /search/lat,lng
             const latLngRegex = /@(-?\d+\.\d+),(-?\d+\.\d+)/;
             const qRegex = /[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/;
             const placeRegex = /\/place\/.*?@(-?\d+\.\d+),(-?\d+\.\d+)/;
@@ -325,76 +338,45 @@
             return null;
         }
 
-        function setCliente(latLng) {
-            if (markerCliente) {
-                markerCliente.setPosition(latLng);
-            } else {
-                markerCliente = new google.maps.Marker({
-                    position: latLng,
-                    map: map,
-                    title: "Cliente",
-                    icon: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
-                    draggable: true // Permite arrastrar el marcador en móvil
-                });
-
-                // Evento para cuando se arrastra el marcador
-                markerCliente.addListener('dragend', function() {
-                    const pos = markerCliente.getPosition();
-                    clientePos = { lat: pos.lat(), lng: pos.lng() };
-                    actualizarDireccion(pos);
-                });
-            }
-            clientePos = { lat: latLng.lat(), lng: latLng.lng() };
-            
-            actualizarDireccion(latLng);
-        }
-
-        function actualizarDireccion(latLng) {
-            // Obtener dirección automáticamente
-            geocoder.geocode({ location: latLng }, (results, status) => {
-                if (status === "OK" && results[0]) {
-                    document.getElementById('direccion').value = results[0].formatted_address;
-                }
-            });
-        }
-
+        // ============================================
+        // FUNCIÓN PRINCIPAL: CALCULAR COSTO
+        // CON LA NUEVA LÓGICA DE PRECIOS
+        // ============================================
         function calcular() {
             if (!clientePos) {
-                alert("Por favor, marca la ubicación del cliente en el mapa o pega un link de Google Maps.");
+                alert("Por favor, marca la ubicación del cliente en el mapa.");
                 return;
             }
 
+            // Calcular distancia en kilómetros
             const dist = google.maps.geometry.spherical.computeDistanceBetween(
                 new google.maps.LatLng(restaurantePos.lat, restaurantePos.lng),
                 new google.maps.LatLng(clientePos.lat, clientePos.lng)
             );
-
             const km = dist / 1000;
-            let total = 0;
-            let detalle = "";
 
-            // NUEVA LÓGICA: Precio progresivo SIN CONGELARSE
-            if (km <= 1.5) {
-                total = 1.90;
-                detalle = `Tarifa mínima (hasta 1.5 km)`;
-            } else if (km <= 5) {
-                total = 2.50;
-                detalle = `Tarifa base hasta 5 km`;
-            } else if (km <= 10) {
-                total = 3.50;
-                detalle = `Zona 5-10 km`;
-            } else if (km <= 15) {
-                total = 4.50;
-                detalle = `Zona 10-15 km`;
-            } else {
-                // PRECIO PROGRESIVO: Sigue subiendo después de 15 km
-                // Base 4.50 + 0.35 por cada km adicional
-                const kmExtras = km - 15;
-                total = 4.50 + (kmExtras * 0.35);
-                detalle = `Tarifa especial: $4.50 + $0.35 por km extra (${kmExtras.toFixed(2)} km adicionales)`;
+            // ===== NUEVA LÓGICA DE PRECIOS =====
+            // Tarifa base: $2.00 (cubre primeros ~1.4 km)
+            // Cada 700 metros adicionales = +$0.25
+            // SIN TOPE, progresivo real
+            
+            let total = 2.00; // Base
+            let detalle = `Tarifa base: $2.00 (cubre hasta 1.4 km aprox)`;
+            
+            if (km > 1.4) {
+                // Calculamos cuántos segmentos de 0.7 km hay después de los primeros 1.4 km
+                const kmExtras = km - 1.4;
+                const segmentos = Math.ceil(kmExtras / 0.7); // Redondeamos hacia arriba
+                const extraTotal = segmentos * 0.25;
+                total = 2.00 + extraTotal;
+                
+                detalle = `Distancia total: ${km.toFixed(2)} km
+                Tarifa base: $2.00 (primeros 1.4 km)
+                + ${segmentos} segmento(s) de 700m × $0.25 = $${extraTotal.toFixed(2)}
+                Total: $${total.toFixed(2)}`;
             }
 
-            // Redondear a múltiplos de 0.25 para facilitar el vuelto
+            // Redondear a 0.25 para facilitar vueltos
             total = Math.ceil(total * 4) / 4;
 
             // Mostrar resultados
@@ -403,10 +385,13 @@
             document.getElementById('detalleCosto').innerText = detalle;
             document.getElementById('resultadoCard').classList.remove('hidden');
             
-            // Scroll suave al resultado
+            // Scroll suave
             document.getElementById('resultadoCard').scrollIntoView({ behavior: 'smooth' });
         }
 
+        // ============================================
+        // FUNCIÓN: Enviar por WhatsApp
+        // ============================================
         function enviarWhatsApp() {
             const nombre = document.getElementById('nombre').value || "Cliente";
             const tel = document.getElementById('telefono').value || "No provisto";
@@ -427,20 +412,44 @@
                 `*Dirección:* ${dir}%0A%0A` +
                 `*Costo:* ${costo}%0A` +
                 `*${dist}*%0A` +
-                `*${detalle}*%0A%0A` +
+                `*Detalle:* ${detalle.replace(/\n/g, ' ')}%0A%0A` +
                 `*Ubicación en Maps:* ${mapsLink}`;
 
             window.open(`https://wa.me/593959698463?text=${mensaje}`, '_blank');
         }
 
-        // Función para probar links de ejemplo
-        function testLinks() {
-            console.log("Ejemplos de links que funcionan:");
-            console.log("- https://maps.app.goo.gl/abc123");
-            console.log("- https://goo.gl/maps/abc123");
-            console.log("- https://www.google.com/maps/@-0.245197,-79.158230,15z");
-            console.log("- https://www.google.com/maps?q=-0.245197,-79.158230");
-        }
+        // ============================================
+        // GARANTIZAR QUE TODO SE REINICIE AL REFRESCAR
+        // ============================================
+        window.addEventListener('load', function() {
+            // Limpiar campos si es necesario
+            if (markerCliente) {
+                markerCliente.setMap(null);
+                markerCliente = null;
+            }
+            clientePos = null;
+            
+            // Restaurar local por defecto
+            restaurantePos = LOCALES.cremita;
+            if (markerRestaurante) {
+                markerRestaurante.setPosition(restaurantePos);
+            }
+            
+            // Limpiar inputs
+            document.getElementById('nombre').value = '';
+            document.getElementById('telefono').value = '';
+            document.getElementById('direccion').value = '';
+            document.getElementById('mapsLink').value = '';
+            document.getElementById('resultadoCard').classList.add('hidden');
+            
+            // Re-centrar mapa
+            if (map) {
+                map.setCenter(restaurantePos);
+                map.setZoom(14);
+            }
+            
+            console.log("Página refrescada correctamente");
+        });
     </script>
 </body>
 </html>
