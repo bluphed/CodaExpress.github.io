@@ -1,0 +1,14 @@
+[
+  {
+    "propósito": "enmascarable",
+    "tamaños": "777x777",
+    "src": "maskable_icon.png",
+    "tipo": "imagen/png"
+  },
+  {
+    "propósito": "enmascarable",
+    "tamaños": "48x48",
+    "src": "maskable_icon_x48.png",
+    "tipo": "imagen/png"
+  }
+]
