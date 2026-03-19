@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Coda Express - Calculadora de Delivery</title>
 
-    <!-- MANIFEST - RUTA CORREGIDA -->
+    <!-- MANIFEST - RUTA CORRECTA -->
     <link rel="manifest" href="manifest.json">
     
     <!-- Iconos para todos los dispositivos -->
@@ -19,8 +19,12 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="CodaExpress">
     
-    <!-- Tailwind CSS con color personalizado -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
     <style>
         /* Color personalizado #DE440D */
         .bg-coda { background-color: #DE440D; }
@@ -135,8 +139,8 @@
                     </h2>
                     <select id="localSelect" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 outline-none btn-touch"
                             style="focus:ring-color: #DE440D;">
-                        <option value="cremita">🍦 La Cremita – Santo Domingo</option>
-                        <option value="custom">📍 Usar mi ubicación actual</option>
+                        <option value="cremita"> La Cremita – Santo Domingo</option>
+                        <option value="custom"> Usar mi ubicación actual</option>
                     </select>
                 </div>
             </div>
@@ -177,7 +181,7 @@
                 </div>
 
                 <button onclick="calcular()" class="w-full font-bold py-4 rounded-2xl flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 btn-touch text-white"
-                        style="background-color: #DE440D; hover:background-color: #b8360a;">
+                        style="background-color: #DE440D;">
                     <i data-lucide="navigation"></i>
                     Calcular Entrega
                 </button>
@@ -195,7 +199,6 @@
         let map;
         let markerRestaurante;
         let markerCliente;
-        // Coordenadas más precisas para La Cremita
         let restaurantePos = { lat: -0.245197, lng: -79.158230 };
         let clientePos = null;
         let geocoder;
@@ -318,8 +321,7 @@
                         inputField.placeholder = originalPlaceholder;
                         const userConfirmed = confirm(
                             "❌ No se pudo leer el link automáticamente.\n\n" +
-                            "¿Quieres abrir el enlace en una nueva pestaña para copiar las coordenadas manualmente?\n" +
-                            "(Luego puedes copiar las coordenadas @lat,lng de la barra de direcciones)"
+                            "¿Quieres abrir el enlace en una nueva pestaña para copiar las coordenadas manualmente?"
                         );
                         if (userConfirmed) {
                             window.open(link, '_blank');
@@ -341,11 +343,10 @@
             try {
                 const response = await fetch(link, { method: 'HEAD', redirect: 'follow' });
                 const finalUrl = response.url;
-                console.log("URL final:", finalUrl);
                 const coords = extraerCoordenadasDeUrl(finalUrl);
                 if (coords) return coords;
             } catch (error) {
-                console.warn("No se pudo seguir redirección, intentando extraer del link original:", error);
+                console.warn("No se pudo seguir redirección");
             }
             return extraerCoordenadasDeUrl(link);
         }
@@ -355,9 +356,7 @@
                 /@(-?\d+\.\d+),(-?\d+\.\d+)/,
                 /[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/,
                 /\/place\/[^@]*@(-?\d+\.\d+),(-?\d+\.\d+)/,
-                /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/,
-                /[?&]ll=(-?\d+\.\d+),(-?\d+\.\d+)/,
-                /[?&]center=(-?\d+\.\d+),(-?\d+\.\d+)/
+                /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/
             ];
             for (let patron of patrones) {
                 const match = url.match(patron);
@@ -430,37 +429,14 @@
             window.open(`https://wa.me/593959698463?text=${mensaje}`, '_blank');
         }
 
-        window.addEventListener('load', function() {
-            if (markerCliente) {
-                markerCliente.setMap(null);
-                markerCliente = null;
-            }
-            clientePos = null;
-            restaurantePos = LOCALES.cremita;
-            if (markerRestaurante) {
-                markerRestaurante.setPosition(restaurantePos);
-            }
-            document.getElementById('nombre').value = '';
-            document.getElementById('telefono').value = '';
-            document.getElementById('direccion').value = '';
-            document.getElementById('mapsLink').value = '';
-            document.getElementById('resultadoCard').classList.add('hidden');
-            if (map) {
-                map.setCenter(restaurantePos);
-                map.setZoom(14);
-            }
-            console.log("Página refrescada correctamente");
-            
-            // Registrar Service Worker (ruta correcta)
-            if ('serviceWorker' in navigator) {
+        // SERVICE WORKER
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
                 navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('✅ Service Worker registrado:', reg.scope))
+                    .then(reg => console.log('✅ Service Worker registrado'))
                     .catch(err => console.log('❌ Error al registrar Service Worker:', err));
-            }
-        });
+            });
+        }
     </script>
-
-    <!-- Este script ya no es necesario porque está dentro del load -->
-    
 </body>
 </html>
