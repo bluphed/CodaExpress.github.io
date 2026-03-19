@@ -6,6 +6,7 @@
   "display": "standalone",
   "background_color": "#DE440D",
   "theme_color": "#DE440D",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "android-chrome-192x192.png",
@@ -16,6 +17,37 @@
       "src": "android-chrome-512x512.png",
       "sizes": "512x512",
       "type": "image/png"
+    },
+    {
+      "src": "apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "favicon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshot-desktop.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Vista de escritorio de Coda Express"
+    },
+    {
+      "src": "screenshot-mobile.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Vista móvil de Coda Express"
     }
   ]
 }
