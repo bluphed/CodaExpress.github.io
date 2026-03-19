@@ -12,7 +12,7 @@
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
     <link rel="apple-touch-icon" href="apple-touch-icon-180x180.png">
-    <meta name="theme-color" content="#DE440D">
+    <meta name="theme-color" content="#DE440D" id="themeColor">
     
     <!-- Meta PWA -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -26,110 +26,273 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
-        .bg-coda { background-color: #DE440D; }
-        .text-coda { color: #DE440D; }
-        .border-coda { border-color: #DE440D; }
-        .hover-bg-coda:hover { background-color: #b8360a; }
+        :root {
+            --color-coda: #DE440D;
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --card-bg: #ffffff;
+        }
+
+        .dark-mode {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --border-color: #334155;
+            --card-bg: #1e293b;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s, color 0.3s;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        .bg-coda { background-color: var(--color-coda); }
+        .text-coda { color: var(--color-coda); }
+        .border-coda { border-color: var(--color-coda); }
         
+        .bg-card {
+            background-color: var(--card-bg);
+            border-color: var(--border-color);
+        }
+        
+        .text-secondary {
+            color: var(--text-secondary);
+        }
+        
+        .border-custom {
+            border-color: var(--border-color);
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 50;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 30px;
+            padding: 8px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-primary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.05);
+        }
+
         #map {
             height: 400px;
             width: 100%;
             border-radius: 0.75rem;
+            filter: var(--map-filter, none);
         }
+
+        .dark-mode #map {
+            --map-filter: invert(0.9) hue-rotate(180deg);
+        }
+
         .btn-touch {
             min-height: 48px;
+            transition: all 0.2s;
         }
+
+        .btn-touch:active {
+            transform: scale(0.98);
+        }
+
         .loading {
             display: inline-block;
             width: 20px;
             height: 20px;
-            border: 3px solid rgba(0,0,0,.1);
+            border: 3px solid rgba(255,255,255,0.3);
             border-radius: 50%;
-            border-top-color: #DE440D;
+            border-top-color: white;
             animation: spin 1s ease-in-out infinite;
         }
+
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+        .glass-effect {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .time-badge {
+            background: var(--color-coda);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .time-badge i {
+            font-size: 1rem;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
-<body class="bg-slate-50">
+<body>
 
-    <div class="max-w-4xl mx-auto p-4">
+    <!-- Botón de tema (dark/light) -->
+    <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle">
+        <i data-lucide="moon" id="themeIcon"></i>
+        <span id="themeText">Modo oscuro</span>
+    </button>
+
+    <div class="max-w-4xl mx-auto p-4 md:p-8">
         <!-- Encabezado -->
-        <header class="flex items-center justify-between mb-8">
+        <header class="flex items-center justify-between mb-8 mt-12 md:mt-0">
             <div class="flex items-center gap-2">
                 <div class="bg-coda p-2 rounded-lg text-white">
                     <i data-lucide="truck"></i>
                 </div>
-                <h1 class="text-2xl font-bold" style="color: #DE440D;">Coda Express</h1>
+                <h1 class="text-2xl font-bold tracking-tight" style="color: var(--color-coda);">Coda Express</h1>
             </div>
-            <span class="text-xs font-medium bg-orange-100 text-coda px-2 py-1 rounded-full">En línea</span>
+            <span class="text-xs font-medium bg-coda/10 text-coda px-2 py-1 rounded-full">En línea</span>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <!-- Columna Izquierda -->
-            <div>
-                <div class="bg-white p-4 rounded-2xl shadow mb-6">
-                    <h2 class="text-lg font-semibold mb-4">📍 Ubicación del Pedido</h2>
+            <div class="space-y-6">
+                <div class="bg-card p-4 rounded-2xl border border-custom shadow-sm">
+                    <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                        <i data-lucide="map-pin" style="color: var(--color-coda);"></i>
+                        Ubicación del Pedido
+                    </h2>
                     
                     <!-- Link de Google Maps -->
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium mb-2">🔗 Link de Google Maps</label>
+                    <div class="mb-4 p-3 bg-card rounded-xl border border-custom">
+                        <label class="block text-sm font-medium text-secondary mb-2">
+                            <i data-lucide="link" class="inline w-4 h-4 mr-1" style="color: var(--color-coda);"></i>
+                            Link de Google Maps
+                        </label>
                         <div class="flex gap-2">
                             <input type="text" id="mapsLink" placeholder="Ej: https://maps.app.goo.gl/..." 
-                                   class="flex-1 p-3 rounded-xl border">
+                                   class="flex-1 p-3 rounded-xl border border-custom bg-card text-primary focus:ring-2 outline-none text-sm"
+                                   style="focus:ring-color: var(--color-coda);">
                             <button onclick="procesarLinkMaps(event)" 
-                                    class="bg-coda text-white px-4 py-2 rounded-xl">
-                                🔍
+                                    class="bg-coda text-white px-4 py-2 rounded-xl hover:opacity-90 transition-all btn-touch">
+                                <i data-lucide="search" class="w-5 h-5"></i>
                             </button>
                         </div>
+                        <p class="text-xs text-secondary mt-1">Los enlaces cortos se procesan automáticamente</p>
                     </div>
                     
                     <!-- Mapa -->
-                    <div id="map" class="bg-gray-200 rounded-xl" style="height: 400px;"></div>
-                    <p class="text-xs text-gray-400 mt-2">* Toca el mapa para marcar el punto de entrega</p>
+                    <div class="relative">
+                        <div id="map" class="bg-gray-200 rounded-xl"></div>
+                        <div class="absolute bottom-2 left-2 glass-effect text-white px-3 py-1 rounded-full text-xs flex items-center gap-1">
+                            <i data-lucide="move" class="w-3 h-3"></i>
+                            <span>Arrastra para mover</span>
+                        </div>
+                    </div>
+                    
+                    <p class="text-xs text-secondary mt-2 italic">
+                        * Toca el mapa para marcar el punto de entrega
+                    </p>
                 </div>
 
-                <div class="bg-white p-4 rounded-2xl shadow">
-                    <h2 class="text-lg font-semibold mb-4">🏪 Seleccionar Local</h2>
-                    <select id="localSelect" class="w-full p-3 rounded-xl border">
+                <div class="bg-card p-6 rounded-2xl border border-custom shadow-sm">
+                    <h2 class="text-lg font-semibold flex items-center gap-2 mb-4">
+                        <i data-lucide="store" style="color: var(--color-coda);"></i>
+                        Seleccionar Local
+                    </h2>
+                    <select id="localSelect" class="w-full p-3 rounded-xl border border-custom bg-card text-primary focus:ring-2 outline-none btn-touch">
                         <option value="cremita">🍦 La Cremita – Santo Domingo</option>
-                        <option value="custom">📍 Usar mi ubicación</option>
+                        <option value="custom">📍 Usar mi ubicación actual</option>
                     </select>
                 </div>
             </div>
 
             <!-- Columna Derecha -->
-            <div>
-                <div class="bg-white p-4 rounded-2xl shadow mb-6">
-                    <h2 class="text-lg font-semibold mb-4">👤 Datos del Cliente</h2>
-                    <input type="text" id="nombre" placeholder="Nombre" class="w-full p-3 rounded-xl border mb-3">
-                    <input type="tel" id="telefono" placeholder="Teléfono" class="w-full p-3 rounded-xl border mb-3">
-                    <textarea id="direccion" placeholder="Dirección" class="w-full p-3 rounded-xl border h-24"></textarea>
+            <div class="space-y-6">
+                <div class="bg-card p-6 rounded-2xl border border-custom shadow-sm">
+                    <h2 class="text-lg font-semibold flex items-center gap-2 mb-4">
+                        <i data-lucide="user" style="color: var(--color-coda);"></i>
+                        Datos del Cliente
+                    </h2>
+                    <input type="text" id="nombre" placeholder="Nombre del cliente" 
+                           class="w-full p-3 rounded-xl border border-custom bg-card text-primary focus:ring-2 outline-none btn-touch mb-3">
+                    <input type="tel" id="telefono" placeholder="Teléfono" 
+                           class="w-full p-3 rounded-xl border border-custom bg-card text-primary focus:ring-2 outline-none btn-touch mb-3">
+                    <textarea id="direccion" placeholder="Dirección exacta (se llena automáticamente)" 
+                              class="w-full p-3 rounded-xl border border-custom bg-card text-primary focus:ring-2 outline-none h-24"></textarea>
                 </div>
 
-                <!-- Resultado -->
-                <div id="resultadoCard" class="bg-coda p-6 rounded-2xl text-white shadow hidden">
-                    <div class="text-4xl font-bold mb-1" id="costoFinal">$0.00</div>
-                    <p class="text-sm" id="distanciaTexto">Distancia: 0.0 km</p>
-                    <button onclick="enviarWhatsApp()" class="w-full mt-4 bg-white text-coda font-bold py-3 rounded-xl">
-                        📱 Enviar por WhatsApp
+                <!-- Tarjeta de resultado MEJORADA con tiempo estimado -->
+                <div id="resultadoCard" class="bg-coda p-6 rounded-2xl text-white shadow-lg hidden fade-in">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="clock" class="w-5 h-5 text-white/80"></i>
+                        <span class="text-white/80 uppercase text-xs font-bold tracking-widest">Costo y tiempo</span>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <div class="text-3xl font-bold" id="costoFinal">$0.00</div>
+                            <p class="text-xs text-white/80">Costo estimado</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="time-badge ml-auto" id="tiempoEstimado">
+                                <i data-lucide="clock" class="w-4 h-4"></i>
+                                <span>Calculando...</span>
+                            </div>
+                            <p class="text-xs text-white/80 mt-1">Tiempo estimado</p>
+                        </div>
+                    </div>
+                    
+                    <div class="border-t border-white/20 pt-4 mt-2">
+                        <p class="text-sm text-white/90" id="distanciaTexto">Distancia: 0.0 km</p>
+                        <p class="text-xs text-white/80 mt-1" id="detalleCosto"></p>
+                        <p class="text-xs text-white/80 mt-1" id="detalleTiempo"></p>
+                    </div>
+                    
+                    <button onclick="enviarWhatsApp()" class="w-full mt-5 bg-white text-coda font-bold py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-white/90 transition-all btn-touch shadow-sm">
+                        <i data-lucide="message-circle" class="w-5 h-5"></i>
+                        Enviar por WhatsApp
                     </button>
                 </div>
 
-                <button onclick="calcular()" class="w-full bg-coda text-white font-bold py-4 rounded-2xl mt-4">
-                    🚚 Calcular Entrega
+                <button onclick="calcular()" class="w-full bg-coda text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 transition-all shadow-lg hover:opacity-90 active:scale-95 btn-touch">
+                    <i data-lucide="navigation"></i>
+                    Calcular Entrega
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Google Maps -->
+    <!-- Google Maps API -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDFR0mPU-jz-crPgioPus5UEdfeEZ90yk4&libraries=geometry,places&callback=initMap" async defer></script>
 
     <script>
+        // ============================================
         // VARIABLES GLOBALES
+        // ============================================
         let map;
         let markerRestaurante;
         let markerCliente;
@@ -141,12 +304,67 @@
             cremita: { lat: -0.245197, lng: -79.158230, nombre: "La Cremita" }
         };
 
-        // INICIALIZACIÓN
+        // ============================================
+        // FUNCIÓN PARA CAMBIAR TEMA (DARK/LIGHT)
+        // ============================================
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.getElementById('themeIcon');
+            const themeText = document.getElementById('themeText');
+            const themeColor = document.getElementById('themeColor');
+            
+            body.classList.toggle('dark-mode');
+            
+            // Actualizar icono y texto
+            if (body.classList.contains('dark-mode')) {
+                themeIcon.setAttribute('data-lucide', 'sun');
+                themeText.textContent = 'Modo claro';
+                themeColor.setAttribute('content', '#0f172a'); // Color oscuro para la barra de estado
+                localStorage.setItem('theme', 'dark');
+            } else {
+                themeIcon.setAttribute('data-lucide', 'moon');
+                themeText.textContent = 'Modo oscuro';
+                themeColor.setAttribute('content', '#DE440D');
+                localStorage.setItem('theme', 'light');
+            }
+            
+            // Actualizar iconos de Lucide
+            lucide.createIcons();
+        }
+
+        // ============================================
+        // CARGAR TEMA GUARDADO
+        // ============================================
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const themeIcon = document.getElementById('themeIcon');
+            const themeText = document.getElementById('themeText');
+            const themeColor = document.getElementById('themeColor');
+            
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                themeIcon.setAttribute('data-lucide', 'sun');
+                themeText.textContent = 'Modo claro';
+                themeColor.setAttribute('content', '#0f172a');
+            } else {
+                themeIcon.setAttribute('data-lucide', 'moon');
+                themeText.textContent = 'Modo oscuro';
+                themeColor.setAttribute('content', '#DE440D');
+            }
+        }
+
+        // ============================================
+        // INICIALIZACIÓN DEL MAPA
+        // ============================================
         function initMap() {
             map = new google.maps.Map(document.getElementById("map"), {
                 center: restaurantePos,
                 zoom: 14,
-                gestureHandling: 'greedy'
+                gestureHandling: 'greedy',
+                zoomControl: true,
+                mapTypeControl: false,
+                streetViewControl: false,
+                fullscreenControl: true
             });
 
             geocoder = new google.maps.Geocoder();
@@ -168,9 +386,28 @@
                     restaurantePos = LOCALES[val];
                     markerRestaurante.setPosition(restaurantePos);
                     map.panTo(restaurantePos);
+                } else if (val === 'custom') {
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(
+                            (position) => {
+                                restaurantePos = {
+                                    lat: position.coords.latitude,
+                                    lng: position.coords.longitude
+                                };
+                                markerRestaurante.setPosition(restaurantePos);
+                                map.setCenter(restaurantePos);
+                                map.setZoom(16);
+                            },
+                            () => alert("No se pudo obtener tu ubicación")
+                        );
+                    }
                 }
             });
 
+            // Cargar tema guardado
+            loadTheme();
+            
+            // Inicializar iconos
             lucide.createIcons();
         }
 
@@ -182,27 +419,39 @@
                     position: latLng,
                     map: map,
                     title: "Cliente",
-                    icon: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png'
+                    icon: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
+                    draggable: true
+                });
+                markerCliente.addListener('dragend', function() {
+                    const pos = markerCliente.getPosition();
+                    clientePos = { lat: pos.lat(), lng: pos.lng() };
+                    actualizarDireccion(pos);
                 });
             }
             clientePos = { lat: latLng.lat(), lng: latLng.lng() };
-            
-            geocoder.geocode({ location: latLng }, (results) => {
-                if (results && results[0]) {
+            actualizarDireccion(latLng);
+        }
+
+        function actualizarDireccion(latLng) {
+            geocoder.geocode({ location: latLng }, (results, status) => {
+                if (status === "OK" && results[0]) {
                     document.getElementById('direccion').value = results[0].formatted_address;
                 }
             });
         }
 
-        // FUNCIÓN PARA ENLACES CORTOS (AUTOMÁTICA)
+        // ============================================
+        // FUNCIÓN PARA PROCESAR LINKS DE GOOGLE MAPS
+        // ============================================
         async function procesarLinkMaps(event) {
             const link = document.getElementById('mapsLink').value.trim();
             if (!link) {
-                alert("❌ Pega un link");
+                alert("❌ Por favor, pega un link de Google Maps");
                 return;
             }
 
             const btn = event.currentTarget;
+            const originalHtml = btn.innerHTML;
             btn.innerHTML = '<span class="loading"></span>';
             btn.disabled = true;
 
@@ -222,27 +471,39 @@
                     document.getElementById('mapsLink').value = '';
                     alert("✅ Ubicación encontrada");
                 } else {
-                    alert("❌ No se encontraron coordenadas");
+                    alert("❌ No se encontraron coordenadas en el link");
                 }
             } catch (error) {
-                alert("❌ Error: " + error.message);
+                alert("❌ Error al procesar el link");
             } finally {
-                btn.innerHTML = '🔍';
+                btn.innerHTML = originalHtml;
                 btn.disabled = false;
+                lucide.createIcons();
             }
         }
 
         function extraerCoordenadas(url) {
-            const match = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
-            if (match) {
-                return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+            const patrones = [
+                /@(-?\d+\.\d+),(-?\d+\.\d+)/,
+                /[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/,
+                /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/
+            ];
+            
+            for (let patron of patrones) {
+                const match = url.match(patron);
+                if (match) {
+                    return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+                }
             }
             return null;
         }
 
+        // ============================================
+        // FUNCIÓN PRINCIPAL: CALCULAR COSTO Y TIEMPO
+        // ============================================
         function calcular() {
             if (!clientePos) {
-                alert("Marca el cliente en el mapa");
+                alert("Por favor, marca la ubicación del cliente en el mapa.");
                 return;
             }
 
@@ -250,20 +511,109 @@
                 new google.maps.LatLng(restaurantePos.lat, restaurantePos.lng),
                 new google.maps.LatLng(clientePos.lat, clientePos.lng)
             );
-            const km = (dist / 1000).toFixed(2);
+            const km = dist / 1000;
 
-            document.getElementById('costoFinal').innerText = '$2.50';
-            document.getElementById('distanciaTexto').innerText = `Distancia: ${km} km`;
+            // Cálculo de costo
+            let total = 2.00;
+            let detalle = "Base $2.00 (1.4 km)";
+            
+            if (km > 1.4) {
+                const kmExtras = km - 1.4;
+                const segmentos = Math.ceil(kmExtras / 0.7);
+                const extraTotal = segmentos * 0.25;
+                total = 2.00 + extraTotal;
+                detalle = `Base + ${segmentos}×700m → $${extraTotal.toFixed(2)} extra`;
+            }
+            total = Math.ceil(total * 4) / 4;
+
+            // ============================================
+            // NUEVO: Cálculo de tiempo estimado (numeral 10)
+            // ============================================
+            // Velocidad promedio asumida: 30 km/h en ciudad
+            const velocidadPromedio = 30; // km/h
+            const tiempoHoras = km / velocidadPromedio;
+            const tiempoMinutos = Math.round(tiempoHoras * 60);
+            
+            let tiempoTexto = "";
+            let detalleTiempo = "";
+            
+            if (tiempoMinutos < 1) {
+                tiempoTexto = "Menos de 1 min";
+                detalleTiempo = "Entrega muy cercana";
+            } else if (tiempoMinutos < 60) {
+                tiempoTexto = `${tiempoMinutos} min`;
+                detalleTiempo = `Aprox. ${tiempoMinutos} minutos a 30 km/h`;
+            } else {
+                const horas = Math.floor(tiempoMinutos / 60);
+                const minutos = tiempoMinutos % 60;
+                tiempoTexto = `${horas}h ${minutos}min`;
+                detalleTiempo = `Aprox. ${horas}h ${minutos}min a 30 km/h`;
+            }
+
+            // Mostrar resultados
+            document.getElementById('costoFinal').innerText = `$${total.toFixed(2)}`;
+            document.getElementById('distanciaTexto').innerText = `Distancia: ${km.toFixed(2)} km`;
+            document.getElementById('detalleCosto').innerText = detalle;
+            
+            // Actualizar tiempo estimado
+            document.getElementById('tiempoEstimado').innerHTML = `
+                <i data-lucide="clock" class="w-4 h-4"></i>
+                <span>${tiempoTexto}</span>
+            `;
+            document.getElementById('detalleTiempo').innerText = detalleTiempo;
+            
             document.getElementById('resultadoCard').classList.remove('hidden');
+            document.getElementById('resultadoCard').scrollIntoView({ behavior: 'smooth' });
+            
+            // Actualizar iconos
+            lucide.createIcons();
         }
 
+        // ============================================
+        // FUNCIÓN: Enviar por WhatsApp
+        // ============================================
         function enviarWhatsApp() {
-            alert("WhatsApp: " + document.getElementById('nombre').value);
+            if (!clientePos) {
+                alert("Primero debes calcular el costo.");
+                return;
+            }
+            
+            const nombre = document.getElementById('nombre').value || "Cliente";
+            const tel = document.getElementById('telefono').value || "No provisto";
+            const dir = document.getElementById('direccion').value || "Ver mapa";
+            const costo = document.getElementById('costoFinal').innerText;
+            const dist = document.getElementById('distanciaTexto').innerText;
+            const detalle = document.getElementById('detalleCosto').innerText;
+            const tiempo = document.getElementById('tiempoEstimado').innerText.replace('clock', '').trim();
+            
+            const localSelect = document.getElementById('localSelect');
+            const localName = localSelect.options[localSelect.selectedIndex].text;
+
+            const mapsLink = `https://www.google.com/maps?q=${clientePos.lat},${clientePos.lng}`;
+
+            const mensaje = `*NUEVO PEDIDO DELIVERY*%0A%0A` +
+                `*Local:* ${localName}%0A` +
+                `*Cliente:* ${nombre}%0A` +
+                `*Teléfono:* ${tel}%0A` +
+                `*Dirección:* ${dir}%0A%0A` +
+                `*Costo:* ${costo}%0A` +
+                `*${dist}*%0A` +
+                `*Tiempo estimado:* ${tiempo}%0A` +
+                `*Detalle:* ${detalle}%0A%0A` +
+                `*Ubicación en Maps:* ${mapsLink}`;
+
+            window.open(`https://wa.me/593959698463?text=${mensaje}`, '_blank');
         }
 
-        // Service Worker
+        // ============================================
+        // SERVICE WORKER
+        // ============================================
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js');
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('✅ Service Worker registrado'))
+                    .catch(err => console.log('❌ Error al registrar Service Worker:', err));
+            });
         }
     </script>
 </body>
