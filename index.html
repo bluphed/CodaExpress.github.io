@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Coda Express</title>
     
-    <!-- SOLO ESTAS LÍNEAS PARA MANIFEST -->
-    <link rel="manifest" href="https://codaexpress.github.io/manifest.json">
+    <!-- MANIFEST - RUTA CORREGIDA (relativa) -->
+    <link rel="manifest" href="manifest.json">
     
-    <!-- Iconos básicos -->
+    <!-- Iconos básicos - RUTAS CORREGIDAS -->
     <link rel="icon" href="favicon.ico">
     <link rel="apple-touch-icon" href="apple-touch-icon-180x180.png">
     <meta name="theme-color" content="#DE440D">
@@ -18,11 +18,21 @@
     <p>Esta es una versión de prueba</p>
     <button onclick="calcular()">Calcular</button>
     
+    <!-- SERVICE WORKER - AGREGADO -->
     <script>
-        console.log('URL del manifest:', document.querySelector('link[rel="manifest"]').href);
+        console.log('URL del manifest:', document.querySelector('link[rel="manifest"]')?.href);
         
         function calcular() {
             alert('Calculando...');
+        }
+        
+        // Registrar Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('✅ Service Worker registrado:', reg.scope))
+                    .catch(err => console.log('❌ Error al registrar Service Worker:', err));
+            });
         }
     </script>
 </body>
