@@ -1,104 +1,362 @@
-body {
-    font-family: Arial, sans-serif;
+* {
     margin: 0;
-    background: #f5f5f5;
+    padding: 0;
+    box-sizing: border-box;
 }
 
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f8f9fa;
+    color: #333;
+}
+
+/* Botón menú */
 .menuBtn {
-    position: absolute;
-    left: 10px;
-    top: 10px;
-    font-size: 28px;
+    position: fixed;
+    left: 20px;
+    top: 20px;
+    font-size: 24px;
     cursor: pointer;
     z-index: 1000;
-    background: white;
-    padding: 5px 15px;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    background: #2c3e50;
+    color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    transition: all 0.3s;
 }
 
+.menuBtn:hover {
+    background: #34495e;
+    transform: scale(1.05);
+}
+
+/* Menú lateral */
 .menuLateral {
     position: fixed;
-    left: -250px;
+    left: -300px;
     top: 0;
-    width: 250px;
+    width: 280px;
     height: 100%;
     background: white;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.2);
-    padding: 20px;
+    box-shadow: 2px 0 20px rgba(0,0,0,0.1);
+    padding: 80px 20px 20px;
     transition: 0.3s;
     z-index: 999;
+    border-radius: 0 20px 20px 0;
+}
+
+.menuLateral h3 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+    font-size: 22px;
 }
 
 .menuLateral p {
-    padding: 10px 0;
+    padding: 15px 0;
     border-bottom: 1px solid #eee;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #555;
+    transition: all 0.3s;
 }
 
 .menuLateral p:hover {
-    background-color: #f0f0f0;
+    color: #27ae60;
+    padding-left: 10px;
 }
 
-.topbar {
+/* Contenedor principal */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Header */
+.header {
+    text-align: center;
+    margin: 30px 0 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 30px 20px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+}
+
+.header h1 {
+    font-size: 24px;
     display: flex;
+    align-items: center;
+    justify-content: center;
     gap: 10px;
-    padding: 10px;
-    background: white;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    margin-left: 50px;
 }
 
-.topbar button {
+/* Botones de acción */
+.action-buttons {
+    display: flex;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.btn-primary {
     flex: 1;
-    padding: 12px;
+    padding: 15px;
     border: none;
-    background: #007bff;
+    background: #3498db;
     color: white;
     font-size: 16px;
-    border-radius: 6px;
+    border-radius: 12px;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
 }
 
-.topbar button:hover {
-    background: #0056b3;
+.btn-primary:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
 }
 
-.container {
-    padding: 10px;
+/* Mapa */
+.map-container {
+    position: relative;
+    margin: 20px 0;
 }
 
 #map {
-    height: 420px;
+    height: 350px;
     width: 100%;
-    border-radius: 10px;
-    margin-top: 10px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    border-radius: 20px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
 }
 
-.mainbtn {
-    padding: 12px;
-    width: 100%;
-    margin-top: 10px;
-    border: none;
-    background: #28a745;
+.map-hint {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    background: rgba(0,0,0,0.7);
     color: white;
-    font-size: 16px;
-    border-radius: 6px;
+    padding: 8px 15px;
+    border-radius: 30px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Sección del cliente */
+.client-section {
+    background: white;
+    border-radius: 20px;
+    padding: 25px;
+    margin: 20px 0;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+}
+
+.client-section h3 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #555;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.input-group input:focus {
+    border-color: #27ae60;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1);
+}
+
+.link-input-group {
+    display: flex;
+    gap: 10px;
+}
+
+.link-input-group input {
+    flex: 1;
+}
+
+.btn-confirm {
+    padding: 12px 20px;
+    background: #27ae60;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s;
+    white-space: nowrap;
+}
+
+.btn-confirm:hover {
+    background: #219a52;
+}
+
+/* Sección de local */
+.local-section {
+    background: white;
+    border-radius: 20px;
+    padding: 20px 25px;
+    margin: 20px 0;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+}
+
+.local-section h4 {
+    color: #7f8c8d;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.local-section select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    font-size: 14px;
     cursor: pointer;
 }
 
-.mainbtn:hover {
-    background: #218838;
+/* Botón calcular */
+.btn-calculate {
+    width: 100%;
+    padding: 18px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 15px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px 0;
+    transition: all 0.3s;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
 }
 
-.resultado {
-    margin-top: 15px;
-    padding: 15px;
-    font-size: 18px;
-    text-align: center;
+.btn-calculate:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+}
+
+/* Tarjeta de resultado */
+.result-card {
     background: white;
-    border-radius: 6px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    min-height: 60px;
+    border-radius: 20px;
+    padding: 30px;
+    margin: 20px 0;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    text-align: center;
+}
+
+.result-placeholder {
+    color: #bdc3c7;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.result-placeholder i {
+    font-size: 48px;
+}
+
+.result-active {
+    color: #2c3e50;
+}
+
+.result-active .distancia {
+    font-size: 24px;
+    font-weight: bold;
+    color: #3498db;
+}
+
+.result-active .costo {
+    font-size: 32px;
+    font-weight: bold;
+    color: #27ae60;
+    margin: 10px 0;
+}
+
+/* Botón WhatsApp */
+.btn-whatsapp {
+    width: 100%;
+    padding: 18px;
+    background: #25D366;
+    color: white;
+    border: none;
+    border-radius: 15px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px 0 40px;
+    transition: all 0.3s;
+    box-shadow: 0 10px 30px rgba(37, 211, 102, 0.3);
+}
+
+.btn-whatsapp:hover {
+    background: #128C7E;
+    transform: translateY(-2px);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .header {
+        margin-top: 70px;
+        padding: 20px;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .link-input-group {
+        flex-direction: column;
+    }
 }
