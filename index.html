@@ -54,6 +54,12 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+        /* Color principal personalizado */
+        .bg-primary { background-color: #DE440D; }
+        .text-primary { color: #DE440D; }
+        .border-primary { border-color: #DE440D; }
+        .hover-bg-primary:hover { background-color: #b3360a; }
+        .focus-ring-primary:focus { ring-color: #DE440D; }
     </style>
 </head>
 <body class="bg-slate-50 font-sans text-slate-900">
@@ -62,12 +68,12 @@
         <!-- Encabezado -->
         <header class="flex items-center justify-between mb-8">
             <div class="flex items-center gap-2">
-                <div class="bg-[#DE440D] p-2 rounded-lg text-white">
+                <div class="bg-primary p-2 rounded-lg text-white">
                     <i data-lucide="truck"></i>
                 </div>
                 <h1 class="text-2xl font-bold tracking-tight">Coda Express</h1>
             </div>
-            <span class="text-xs font-medium bg-orange-100 text-[#DE440D] px-2 py-1 rounded-full">En línea</span>
+            <span class="text-xs font-medium bg-orange-100 text-primary px-2 py-1 rounded-full">En línea</span>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -75,7 +81,7 @@
             <div class="space-y-6">
                 <div class="bg-white p-4 rounded-2xl custom-shadow">
                     <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
-                        <i data-lucide="map-pin" class="text-[#DE440D]"></i>
+                        <i data-lucide="map-pin" class="text-primary"></i>
                         Ubicación del Pedido
                     </h2>
                     
@@ -86,13 +92,14 @@
                             Link de Google Maps
                         </label>
                         <div class="flex gap-2">
-                            <input type="text" id="mapsLink" placeholder="Pega el link aquí..." 
-                                   class="flex-1 p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#DE440D] outline-none text-sm">
-                            <button onclick="procesarLinkMaps()" 
-                                    class="bg-[#DE440D] text-white px-4 py-2 rounded-xl hover:bg-[#b5360a] transition-colors btn-touch">
+                            <input type="text" id="mapsLink" placeholder="Pega el link aquí (corto o largo)..." 
+                                   class="flex-1 p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary outline-none text-sm">
+                            <button onclick="procesarLinkMaps(event)" 
+                                    class="bg-primary text-white px-4 py-2 rounded-xl hover-bg-primary transition-colors btn-touch">
                                 <i data-lucide="search" class="w-5 h-5"></i>
                             </button>
                         </div>
+                        <p class="text-xs text-slate-400 mt-1">Ej: https://maps.app.goo.gl/7VVWt8VCDiwqpMPT7</p>
                     </div>
                     
                     <!-- Mapa -->
@@ -111,10 +118,10 @@
 
                 <div class="bg-white p-6 rounded-2xl custom-shadow space-y-4">
                     <h2 class="text-lg font-semibold flex items-center gap-2">
-                        <i data-lucide="store" class="text-[#DE440D]"></i>
+                        <i data-lucide="store" class="text-primary"></i>
                         Seleccionar Local
                     </h2>
-                    <select id="localSelect" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-[#DE440D] outline-none btn-touch">
+                    <select id="localSelect" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-primary outline-none btn-touch">
                         <option value="cremita">La Cremita – Santo Domingo</option>
                         <option value="kfc">KFC Paseo Shopping</option>
                         <option value="custom">📍 Usar mi ubicación</option>
@@ -126,27 +133,29 @@
             <div class="space-y-6">
                 <div class="bg-white p-6 rounded-2xl custom-shadow space-y-4">
                     <h2 class="text-lg font-semibold flex items-center gap-2">
-                        <i data-lucide="user" class="text-[#DE440D]"></i>
+                        <i data-lucide="user" class="text-primary"></i>
                         Datos del Cliente
                     </h2>
                     <input type="text" id="nombre" placeholder="Nombre del cliente" 
-                           class="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#DE440D] outline-none btn-touch">
+                           class="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary outline-none btn-touch">
                     <input type="tel" id="telefono" placeholder="Teléfono" 
-                           class="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#DE440D] outline-none btn-touch">
+                           class="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary outline-none btn-touch">
                     <textarea id="direccion" placeholder="Dirección exacta" 
-                              class="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#DE440D] outline-none h-24"></textarea>
+                              class="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary outline-none h-24"></textarea>
                 </div>
 
-                <div id="resultadoCard" class="bg-[#DE440D] p-6 rounded-2xl text-white custom-shadow hidden">
-                    <div class="flex justify-between items-center mb-4">
-                        <span class="text-orange-100 uppercase text-xs font-bold tracking-widest">Costo Estimado</span>
-                        <i data-lucide="calculator"></i>
+                <!-- Resultado más limpio -->
+                <div id="resultadoCard" class="bg-primary p-6 rounded-2xl text-white custom-shadow hidden">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-orange-100 uppercase text-xs font-bold tracking-widest">Costo estimado</span>
+                        <i data-lucide="calculator" class="w-5 h-5"></i>
                     </div>
-                    <div class="text-4xl font-bold mb-2" id="costoFinal">$0.00</div>
+                    <div class="text-4xl font-bold mb-1" id="costoFinal">$0.00</div>
                     <p class="text-sm text-orange-100" id="distanciaTexto">Distancia: 0.0 km</p>
-                    <p class="text-xs text-orange-200 mt-1" id="detalleCosto"></p>
+                    <!-- Eliminamos el detalle extenso, solo mostramos un resumen si es necesario -->
+                    <p class="text-xs text-orange-200 mt-2" id="detalleCosto"></p>
                     
-                    <button onclick="enviarWhatsApp()" class="w-full mt-6 bg-white text-[#DE440D] font-bold py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-orange-50 transition-colors btn-touch">
+                    <button onclick="enviarWhatsApp()" class="w-full mt-4 bg-white text-primary font-bold py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-orange-50 transition-colors btn-touch">
                         <i data-lucide="message-circle"></i>
                         Enviar por WhatsApp
                     </button>
@@ -275,12 +284,12 @@
         }
 
         // ============================================
-        // FUNCIÓN: Procesar link de Google Maps
+        // FUNCIÓN PRINCIPAL MEJORADA: Procesar link de Google Maps
         // ============================================
-        function procesarLinkMaps() {
+        function procesarLinkMaps(event) {
             const link = document.getElementById('mapsLink').value.trim();
             if (!link) {
-                alert("Por favor pega un link de Google Maps");
+                alert("❌ Por favor, pega un link de Google Maps");
                 return;
             }
 
@@ -289,20 +298,28 @@
             btn.innerHTML = '<span class="loading"></span>';
             btn.disabled = true;
 
-            extractCoordinatesFromLink(link)
+            const inputField = document.getElementById('mapsLink');
+            inputField.placeholder = 'Procesando link...';
+
+            extraerCoordenadasDeLink(link)
                 .then(coords => {
                     if (coords) {
                         const latLng = new google.maps.LatLng(coords.lat, coords.lng);
                         map.setCenter(latLng);
                         map.setZoom(18);
                         setCliente(latLng);
-                        document.getElementById('mapsLink').value = '';
+                        inputField.value = '';
+                        inputField.placeholder = 'Pega el link aquí...';
+                        alert("✅ Ubicación encontrada y marcada en el mapa");
                     } else {
-                        alert("No se pudieron extraer coordenadas del link");
+                        alert("❌ No se pudieron extraer coordenadas del link. Verifica que sea un link válido de Google Maps.");
+                        inputField.placeholder = 'Pega el link aquí...';
                     }
                 })
                 .catch(error => {
-                    alert("Error al procesar el link: " + error.message);
+                    console.error("Error:", error);
+                    alert("❌ Error al procesar el link: " + error.message);
+                    inputField.placeholder = 'Pega el link aquí...';
                 })
                 .finally(() => {
                     btn.innerHTML = originalHtml;
@@ -310,37 +327,62 @@
                 });
         }
 
-        function extractCoordinatesFromLink(link) {
-            return new Promise((resolve, reject) => {
-                if (link.includes('goo.gl') || link.includes('maps.app.goo')) {
-                    fetch(link, { method: 'HEAD', redirect: 'follow' })
-                        .then(response => resolve(extractFromUrl(response.url)))
-                        .catch(reject);
-                } else {
-                    resolve(extractFromUrl(link));
-                }
-            });
+        // ============================================
+        // FUNCIÓN MEJORADA: Extraer coordenadas de cualquier link de Google Maps
+        // ============================================
+        async function extraerCoordenadasDeLink(link) {
+            try {
+                // 1. Intentar seguir redirecciones (para links cortos)
+                const response = await fetch(link, { method: 'HEAD', redirect: 'follow' });
+                const finalUrl = response.url;
+                console.log("URL final:", finalUrl);
+                
+                // 2. Extraer coordenadas de la URL final
+                const coords = extraerCoordenadasDeUrl(finalUrl);
+                if (coords) return coords;
+            } catch (error) {
+                console.warn("No se pudo seguir redirección, intentando extraer del link original:", error);
+            }
+            
+            // 3. Si falla, intentar extraer directamente del link original
+            return extraerCoordenadasDeUrl(link);
         }
 
-        function extractFromUrl(url) {
-            const latLngRegex = /@(-?\d+\.\d+),(-?\d+\.\d+)/;
-            const qRegex = /[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/;
-            const placeRegex = /\/place\/.*?@(-?\d+\.\d+),(-?\d+\.\d+)/;
+        // ============================================
+        // FUNCIÓN MEJORADA: Extraer coordenadas de una URL mediante expresiones regulares
+        // ============================================
+        function extraerCoordenadasDeUrl(url) {
+            // Patrones de búsqueda (ordenados de más específico a más general)
+            const patrones = [
+                // Formato @lat,lng (el más común)
+                /@(-?\d+\.\d+),(-?\d+\.\d+)/,
+                // Formato ?q=lat,lng
+                /[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/,
+                // Formato /place/...@lat,lng
+                /\/place\/[^@]*@(-?\d+\.\d+),(-?\d+\.\d+)/,
+                // Formato !3d...!4d (usado en links compartidos desde móvil)
+                /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/,
+                // Formato ll=lat,lng
+                /[?&]ll=(-?\d+\.\d+),(-?\d+\.\d+)/,
+                // Formato center=lat,lng
+                /[?&]center=(-?\d+\.\d+),(-?\d+\.\d+)/
+            ];
 
-            let match = url.match(latLngRegex) || url.match(qRegex) || url.match(placeRegex);
-            
-            if (match) {
-                return {
-                    lat: parseFloat(match[1]),
-                    lng: parseFloat(match[2])
-                };
+            for (let patron of patrones) {
+                const match = url.match(patron);
+                if (match) {
+                    return {
+                        lat: parseFloat(match[1]),
+                        lng: parseFloat(match[2])
+                    };
+                }
             }
-            return null;
+
+            return null; // No se encontraron coordenadas
         }
 
         // ============================================
         // FUNCIÓN PRINCIPAL: CALCULAR COSTO
-        // CON LA NUEVA LÓGICA DE PRECIOS
         // ============================================
         function calcular() {
             if (!clientePos) {
@@ -348,44 +390,33 @@
                 return;
             }
 
-            // Calcular distancia en kilómetros
             const dist = google.maps.geometry.spherical.computeDistanceBetween(
                 new google.maps.LatLng(restaurantePos.lat, restaurantePos.lng),
                 new google.maps.LatLng(clientePos.lat, clientePos.lng)
             );
             const km = dist / 1000;
 
-            // ===== NUEVA LÓGICA DE PRECIOS =====
-            // Tarifa base: $2.00 (cubre primeros ~1.4 km)
-            // Cada 700 metros adicionales = +$0.25
-            // SIN TOPE, progresivo real
-            
-            let total = 2.00; // Base
-            let detalle = `Tarifa base: $2.00 (cubre hasta 1.4 km aprox)`;
+            // Lógica de precios: base $2.00 + $0.25 cada 700m extras
+            let total = 2.00;
+            let detalle = "";
             
             if (km > 1.4) {
-                // Calculamos cuántos segmentos de 0.7 km hay después de los primeros 1.4 km
                 const kmExtras = km - 1.4;
-                const segmentos = Math.ceil(kmExtras / 0.7); // Redondeamos hacia arriba
+                const segmentos = Math.ceil(kmExtras / 0.7);
                 const extraTotal = segmentos * 0.25;
                 total = 2.00 + extraTotal;
-                
-                detalle = `Distancia total: ${km.toFixed(2)} km
-                Tarifa base: $2.00 (primeros 1.4 km)
-                + ${segmentos} segmento(s) de 700m × $0.25 = $${extraTotal.toFixed(2)}
-                Total: $${total.toFixed(2)}`;
+                detalle = `+ ${segmentos} segmento(s) de 700m`;
+            } else {
+                detalle = "Tarifa mínima";
             }
 
-            // Redondear a 0.25 para facilitar vueltos
-            total = Math.ceil(total * 4) / 4;
+            total = Math.ceil(total * 4) / 4; // Redondear a 0.25
 
-            // Mostrar resultados
             document.getElementById('costoFinal').innerText = `$${total.toFixed(2)}`;
             document.getElementById('distanciaTexto').innerText = `Distancia: ${km.toFixed(2)} km`;
             document.getElementById('detalleCosto').innerText = detalle;
             document.getElementById('resultadoCard').classList.remove('hidden');
             
-            // Scroll suave
             document.getElementById('resultadoCard').scrollIntoView({ behavior: 'smooth' });
         }
 
@@ -398,7 +429,6 @@
             const dir = document.getElementById('direccion').value || "Ver mapa";
             const costo = document.getElementById('costoFinal').innerText;
             const dist = document.getElementById('distanciaTexto').innerText;
-            const detalle = document.getElementById('detalleCosto').innerText;
             
             const localSelect = document.getElementById('localSelect');
             const localName = localSelect.options[localSelect.selectedIndex].text;
@@ -411,38 +441,33 @@
                 `*Teléfono:* ${tel}%0A` +
                 `*Dirección:* ${dir}%0A%0A` +
                 `*Costo:* ${costo}%0A` +
-                `*${dist}*%0A` +
-                `*Detalle:* ${detalle.replace(/\n/g, ' ')}%0A%0A` +
+                `*${dist}*%0A%0A` +
                 `*Ubicación en Maps:* ${mapsLink}`;
 
             window.open(`https://wa.me/593959698463?text=${mensaje}`, '_blank');
         }
 
         // ============================================
-        // GARANTIZAR QUE TODO SE REINICIE AL REFRESCAR
+        // REINICIAR AL REFRESCAR LA PÁGINA
         // ============================================
         window.addEventListener('load', function() {
-            // Limpiar campos si es necesario
             if (markerCliente) {
                 markerCliente.setMap(null);
                 markerCliente = null;
             }
             clientePos = null;
             
-            // Restaurar local por defecto
             restaurantePos = LOCALES.cremita;
             if (markerRestaurante) {
                 markerRestaurante.setPosition(restaurantePos);
             }
             
-            // Limpiar inputs
             document.getElementById('nombre').value = '';
             document.getElementById('telefono').value = '';
             document.getElementById('direccion').value = '';
             document.getElementById('mapsLink').value = '';
             document.getElementById('resultadoCard').classList.add('hidden');
             
-            // Re-centrar mapa
             if (map) {
                 map.setCenter(restaurantePos);
                 map.setZoom(14);
