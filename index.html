@@ -5,48 +5,114 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora Delivery</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <!-- Botón menú -->
-    <div class="menuBtn" onclick="abrirMenu()">☰</div>
+    <div class="menuBtn" onclick="abrirMenu()">
+        <i class="fas fa-bars"></i>
+    </div>
     
     <!-- Menú lateral -->
     <div id="menuLateral" class="menuLateral">
-        <h3>Menú</h3>
-        <p onclick="toggleLocales()">📋 Locales ▼</p>
+        <h3><i class="fas fa-store"></i> Menú</h3>
+        <p onclick="toggleLocales()"><i class="fas fa-map-marker-alt"></i> Locales disponibles ▼</p>
         <div id="listaLocales" style="display:none;padding-left:10px;">
             <p onclick="seleccionarLocal(-0.25305, -79.1751)">
-                🍦 La Cremita – Santo Domingo
+                <i class="fas fa-ice-cream"></i> 🍦 La Cremita – Santo Domingo
+            </p>
+            <p onclick="seleccionarLocal(-0.180653, -78.467834)">
+                <i class="fas fa-pizza"></i> 🍕 Pizza Express – Quito
             </p>
         </div>
-        <p onclick="cerrarMenu()">✖ Cerrar menú</p>
+        <p onclick="cerrarMenu()"><i class="fas fa-times"></i> Cerrar menú</p>
     </div>
     
-    <!-- Botones superiores -->
-    <div class="topbar">
-        <button onclick="modoRestaurante()">📍 Marcar Local</button>
-        <button onclick="modoCliente()">👤 Marcar Cliente</button>
-    </div>
-    
-    <!-- Contenido principal -->
+    <!-- Contenedor principal -->
     <div class="container">
-        <div id="map"></div>
-        
-        <button class="mainbtn" onclick="calcular()">
-            🚚 Calcular costo
-        </button>
-        
-        <div id="resultado" class="resultado">
-            Esperando cálculo...
+        <!-- Header con título -->
+        <div class="header">
+            <h1><i class="fas fa-truck"></i> Calculadora de Delivery</h1>
         </div>
         
-        <button class="mainbtn" onclick="enviarWhatsApp()">
-            📱 Enviar por WhatsApp
+        <!-- Botones de acción rápida -->
+        <div class="action-buttons">
+            <button class="btn-primary" onclick="modoRestaurante()">
+                <i class="fas fa-store-alt"></i> Marcar Local
+            </button>
+            <button class="btn-primary" onclick="modoCliente()">
+                <i class="fas fa-user"></i> Marcar Cliente
+            </button>
+        </div>
+        
+        <!-- Mapa -->
+        <div class="map-container">
+            <div id="map"></div>
+            <div class="map-hint">
+                <i class="fas fa-info-circle"></i> Haz clic en el mapa para marcar ubicaciones
+            </div>
+        </div>
+        
+        <!-- Sección de datos del cliente (NUEVO) -->
+        <div class="client-section">
+            <h3><i class="fas fa-user-circle"></i> Datos del cliente</h3>
+            
+            <div class="input-group">
+                <label><i class="fas fa-user"></i> Nombre del cliente:</label>
+                <input type="text" id="nombreCliente" placeholder="Ej: Juan Pérez">
+            </div>
+            
+            <div class="input-group">
+                <label><i class="fas fa-phone"></i> Número de celular:</label>
+                <input type="tel" id="celularCliente" placeholder="Ej: 0991234567">
+            </div>
+            
+            <div class="input-group">
+                <label><i class="fas fa-map-pin"></i> Referencia de ubicación:</label>
+                <input type="text" id="referenciaCliente" placeholder="Ej: Casa blanca esquinera">
+            </div>
+            
+            <div class="input-group">
+                <label><i class="fab fa-whatsapp"></i> Pegar link de ubicación (WhatsApp):</label>
+                <div class="link-input-group">
+                    <input type="text" id="ubicacionLink" placeholder="https://maps.app.goo.gl/...">
+                    <button class="btn-confirm" onclick="confirmarUbicacionLink()">
+                        <i class="fas fa-check"></i> Confirmar
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sección de cambio de local -->
+        <div class="local-section">
+            <h4><i class="fas fa-store"></i> Cambiar Local (Opcional)</h4>
+            <select id="selectorLocal" onchange="cambiarLocalDesdeSelector()">
+                <option value="">Seleccionar local...</option>
+                <option value="-0.25305,-79.1751">🍦 La Cremita – Santo Domingo</option>
+                <option value="-0.180653,-78.467834">🍕 Pizza Express – Quito</option>
+            </select>
+        </div>
+        
+        <!-- Botón calcular -->
+        <button class="btn-calculate" onclick="calcular()">
+            <i class="fas fa-calculator"></i> Calcular costo
+        </button>
+        
+        <!-- Resultado -->
+        <div id="resultado" class="result-card">
+            <div class="result-placeholder">
+                <i class="fas fa-map-marked-alt"></i>
+                <p>Esperando cálculo...</p>
+            </div>
+        </div>
+        
+        <!-- Botón WhatsApp -->
+        <button class="btn-whatsapp" onclick="enviarWhatsApp()">
+            <i class="fab fa-whatsapp"></i> Enviar pedido por WhatsApp
         </button>
     </div>
 
     <script src="script.js"></script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDFR0mPU-jz-crPgioPus5UEdfeEZ90yk4&libraries=geometry&callback=initMap" async defer></script>
 </body>
-</html>
 </html>
