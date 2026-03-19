@@ -1,7 +1,7 @@
 {
   "name": "Coda Express",
   "short_name": "CodaExpress",
-  "start_url": "https://codaexpress.github.io/",
+  "start_url": ".",
   "display": "standalone",
   "theme_color": "#DE440D",
   "background_color": "#DE440D",
