@@ -12,7 +12,7 @@
         .bg-coda { background-color: #DE440D; }
         .text-coda { color: #DE440D; }
         .border-coda { border-color: #DE440D; }
-        .hover-bg-coda:hover { background-color: #b8360a; } /* Versión más oscura */
+        .hover-bg-coda:hover { background-color: #b8360a; }
         .ring-coda:focus { --tw-ring-color: #DE440D; }
         
         #map {
@@ -122,7 +122,6 @@
                     <select id="localSelect" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 outline-none btn-touch"
                             style="focus:ring-color: #DE440D;">
                         <option value="cremita">🍦 La Cremita – Santo Domingo</option>
-                        <option value="kfc">🍗 KFC Paseo Shopping</option>
                         <option value="custom">📍 Usar mi ubicación actual</option>
                     </select>
                 </div>
@@ -182,13 +181,13 @@
         let map;
         let markerRestaurante;
         let markerCliente;
-        let restaurantePos = { lat: -0.245197, lng: -79.158230 }; // Santo Domingo
+        // Coordenadas más precisas para La Cremita
+        let restaurantePos = { lat: -0.245197, lng: -79.158230 };
         let clientePos = null;
         let geocoder;
 
         const LOCALES = {
-            cremita: { lat: -0.245197, lng: -79.158230, nombre: "La Cremita" },
-            kfc: { lat: -0.248731, lng: -79.1617479, nombre: "KFC Paseo Shopping" }
+            cremita: { lat: -0.245197, lng: -79.158230, nombre: "La Cremita" }
         };
 
         // ============================================
@@ -198,7 +197,7 @@
             map = new google.maps.Map(document.getElementById("map"), {
                 center: restaurantePos,
                 zoom: 14,
-                gestureHandling: 'greedy', // Móvil: 1 dedo
+                gestureHandling: 'greedy',
                 zoomControl: true,
                 mapTypeControl: false,
                 streetViewControl: false,
@@ -208,7 +207,6 @@
 
             geocoder = new google.maps.Geocoder();
 
-            // Marcador del restaurante
             markerRestaurante = new google.maps.Marker({
                 position: restaurantePos,
                 map: map,
@@ -216,12 +214,10 @@
                 icon: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png'
             });
 
-            // Click en mapa = marcar cliente
             map.addListener("click", (e) => {
                 setCliente(e.latLng);
             });
 
-            // Cambio de local
             document.getElementById('localSelect').addEventListener('change', function() {
                 const val = this.value;
                 if (LOCALES[val]) {
@@ -246,13 +242,9 @@
                 }
             });
 
-            // Inicializar iconos de Lucide
             lucide.createIcons();
         }
 
-        // ============================================
-        // FUNCIÓN: Marcar cliente en el mapa
-        // ============================================
         function setCliente(latLng) {
             if (markerCliente) {
                 markerCliente.setPosition(latLng);
@@ -264,7 +256,6 @@
                     icon: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
                     draggable: true
                 });
-
                 markerCliente.addListener('dragend', function() {
                     const pos = markerCliente.getPosition();
                     clientePos = { lat: pos.lat(), lng: pos.lng() };
@@ -275,9 +266,6 @@
             actualizarDireccion(latLng);
         }
 
-        // ============================================
-        // FUNCIÓN: Obtener dirección desde coordenadas
-        // ============================================
         function actualizarDireccion(latLng) {
             geocoder.geocode({ location: latLng }, (results, status) => {
                 if (status === "OK" && results[0]) {
@@ -286,9 +274,6 @@
             });
         }
 
-        // ============================================
-        // FUNCIÓN MEJORADA: Procesar link de Google Maps
-        // ============================================
         function procesarLinkMaps(event) {
             const link = document.getElementById('mapsLink').value.trim();
             if (!link) {
@@ -317,10 +302,8 @@
                         alert("✅ Ubicación encontrada y marcada en el mapa");
                     } else {
                         inputField.placeholder = originalPlaceholder;
-                        // Preguntar al usuario si quiere abrir el link manualmente
                         const userConfirmed = confirm(
                             "❌ No se pudo leer el link automáticamente.\n\n" +
-                            "Esto puede pasar con enlaces muy cortos de la app de Google Maps.\n\n" +
                             "¿Quieres abrir el enlace en una nueva pestaña para copiar las coordenadas manualmente?\n" +
                             "(Luego puedes copiar las coordenadas @lat,lng de la barra de direcciones)"
                         );
@@ -340,9 +323,6 @@
                 });
         }
 
-        // ============================================
-        // FUNCIÓN: Extraer coordenadas de cualquier link de Google Maps
-        // ============================================
         async function extraerCoordenadasDeLink(link) {
             try {
                 const response = await fetch(link, { method: 'HEAD', redirect: 'follow' });
@@ -374,9 +354,6 @@
             return null;
         }
 
-        // ============================================
-        // FUNCIÓN PRINCIPAL: CALCULAR COSTO (resultado limpio)
-        // ============================================
         function calcular() {
             if (!clientePos) {
                 alert("Por favor, marca la ubicación del cliente en el mapa.");
@@ -389,7 +366,6 @@
             );
             const km = dist / 1000;
 
-            // Lógica de precios: base $2.00 + $0.25 cada 700m extras
             let total = 2.00;
             let detalle = `Base $2.00 (1.4 km)`;
             
@@ -401,19 +377,15 @@
                 detalle = `Base + ${segmentos}×700m → $${extraTotal.toFixed(2)} extra`;
             }
 
-            total = Math.ceil(total * 4) / 4; // Redondear a 0.25
+            total = Math.ceil(total * 4) / 4;
 
             document.getElementById('costoFinal').innerText = `$${total.toFixed(2)}`;
             document.getElementById('distanciaTexto').innerText = `Distancia: ${km.toFixed(2)} km`;
             document.getElementById('detalleCosto').innerText = detalle;
             document.getElementById('resultadoCard').classList.remove('hidden');
-            
             document.getElementById('resultadoCard').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // ============================================
-        // FUNCIÓN: Enviar por WhatsApp
-        // ============================================
         function enviarWhatsApp() {
             if (!clientePos) {
                 alert("Primero debes calcular el costo.");
@@ -444,32 +416,25 @@
             window.open(`https://wa.me/593959698463?text=${mensaje}`, '_blank');
         }
 
-        // ============================================
-        // REINICIAR AL REFRESCAR LA PÁGINA
-        // ============================================
         window.addEventListener('load', function() {
             if (markerCliente) {
                 markerCliente.setMap(null);
                 markerCliente = null;
             }
             clientePos = null;
-            
             restaurantePos = LOCALES.cremita;
             if (markerRestaurante) {
                 markerRestaurante.setPosition(restaurantePos);
             }
-            
             document.getElementById('nombre').value = '';
             document.getElementById('telefono').value = '';
             document.getElementById('direccion').value = '';
             document.getElementById('mapsLink').value = '';
             document.getElementById('resultadoCard').classList.add('hidden');
-            
             if (map) {
                 map.setCenter(restaurantePos);
                 map.setZoom(14);
             }
-            
             console.log("Página refrescada correctamente");
         });
     </script>
