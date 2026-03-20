@@ -149,59 +149,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
     </style>
-    
-    <!-- Script de depuración para el mapa -->
-    <script>
-        // Forzar que el mapa se inicialice correctamente
-        window.initMap = function() {
-            console.log("🟢 Inicializando mapa...");
-            try {
-                const mapElement = document.getElementById('map');
-                if (!mapElement) {
-                    console.error("❌ No se encontró el elemento #map");
-                    return;
-                }
-                
-                const map = new google.maps.Map(mapElement, {
-                    center: { lat: -0.245197, lng: -79.158230 },
-                    zoom: 14,
-                    gestureHandling: 'greedy',
-                    zoomControl: true,
-                    mapTypeControl: false,
-                    streetViewControl: false,
-                    fullscreenControl: true
-                });
-                
-                console.log("✅ Mapa inicializado correctamente");
-                
-                // Guardar mapa en variable global
-                window.mapaGlobal = map;
-                
-                // Agregar marcador de prueba
-                new google.maps.Marker({
-                    position: { lat: -0.245197, lng: -79.158230 },
-                    map: map,
-                    title: "La Cremita",
-                    icon: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png'
-                });
-                
-                // Mostrar mensaje de éxito en el mapa
-                const infoWindow = new google.maps.InfoWindow({
-                    content: '<div style="color: #DE440D; font-weight: bold;">📍 Coda Express</div>'
-                });
-                infoWindow.setPosition({ lat: -0.245197, lng: -79.158230 });
-                infoWindow.open(map);
-                
-            } catch (error) {
-                console.error("❌ Error al inicializar mapa:", error);
-                document.getElementById('map').innerHTML = `
-                    <div class="flex items-center justify-center h-full bg-red-100 text-red-600 p-4">
-                        Error al cargar el mapa: ${error.message}
-                    </div>
-                `;
-            }
-        };
-    </script>
 </head>
 <body>
 
@@ -288,9 +235,8 @@
                     <input type="text" id="nombre" placeholder="Nombre del cliente" 
                            class="w-full p-3 rounded-xl border border-custom bg-card text-primary focus:ring-2 outline-none btn-touch mb-3">
                     <input type="tel" id="telefono" placeholder="Teléfono" 
-                           class="w-full p-3 rounded-xl border border-custom bg-card text-primary focus:ring-2 outline-none btn-touch mb-3">
-                    <textarea id="direccion" placeholder="Dirección exacta (se llena automáticamente)" 
-                              class="w-full p-3 rounded-xl border border-custom bg-card text-primary focus:ring-2 outline-none h-24"></textarea>
+                           class="w-full p-3 rounded-xl border border-custom bg-card text-primary focus:ring-2 outline-none btn-touch">
+                    <!-- EL CUADRO DE DIRECCIÓN FUE ELIMINADO -->
                 </div>
 
                 <!-- Tarjeta de resultado -->
@@ -334,7 +280,7 @@
         </div>
     </div>
 
-    <!-- Google Maps API - CON CALLBACK EXPLÍCITO -->
+    <!-- Google Maps API -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDFR0mPU-jz-crPgioPus5UEdfeEZ90yk4&libraries=geometry,places&callback=initMap&v=weekly" async defer></script>
 
     <script>
@@ -400,25 +346,15 @@
         }
 
         // ============================================
-        // INICIALIZACIÓN DEL MAPA (VERSIÓN CORREGIDA)
+        // INICIALIZACIÓN DEL MAPA
         // ============================================
         function initMap() {
-            console.log("🟢 Inicializando mapa desde script principal...");
+            console.log("🟢 Inicializando mapa...");
             try {
-                const mapElement = document.getElementById('map');
-                if (!mapElement) {
-                    console.error("❌ Elemento #map no encontrado");
-                    return;
-                }
-
-                map = new google.maps.Map(mapElement, {
+                map = new google.maps.Map(document.getElementById("map"), {
                     center: restaurantePos,
                     zoom: 14,
-                    gestureHandling: 'greedy',
-                    zoomControl: true,
-                    mapTypeControl: false,
-                    streetViewControl: false,
-                    fullscreenControl: true
+                    gestureHandling: 'greedy'
                 });
 
                 geocoder = new google.maps.Geocoder();
@@ -460,26 +396,9 @@
 
                 loadTheme();
                 lucide.createIcons();
-                
-                console.log("✅ Mapa inicializado correctamente");
-                
-                // InfoWindow de bienvenida
-                const infoWindow = new google.maps.InfoWindow({
-                    content: '<div style="color: #DE440D; font-weight: bold;">📍 Coda Express - Toca el mapa para marcar</div>'
-                });
-                infoWindow.setPosition(restaurantePos);
-                infoWindow.open(map);
-                
+                console.log("✅ Mapa listo");
             } catch (error) {
-                console.error("❌ Error en initMap:", error);
-                document.getElementById('map').innerHTML = `
-                    <div class="flex items-center justify-center h-full bg-red-100 text-red-600 p-4 text-center">
-                        Error al cargar el mapa: ${error.message}<br>
-                        <button onclick="location.reload()" class="mt-2 bg-coda text-white px-4 py-2 rounded">
-                            Reintentar
-                        </button>
-                    </div>
-                `;
+                console.error("❌ Error en mapa:", error);
             }
         }
 
@@ -497,23 +416,13 @@
                 markerCliente.addListener('dragend', function() {
                     const pos = markerCliente.getPosition();
                     clientePos = { lat: pos.lat(), lng: pos.lng() };
-                    actualizarDireccion(pos);
                 });
             }
             clientePos = { lat: latLng.lat(), lng: latLng.lng() };
-            actualizarDireccion(latLng);
-        }
-
-        function actualizarDireccion(latLng) {
-            geocoder.geocode({ location: latLng }, (results, status) => {
-                if (status === "OK" && results[0]) {
-                    document.getElementById('direccion').value = results[0].formatted_address;
-                }
-            });
         }
 
         // ============================================
-        // FUNCIÓN MEJORADA: Procesar links de Google Maps
+        // FUNCIÓN SIMPLIFICADA PARA LEER LINKS DE GOOGLE MAPS
         // ============================================
         async function procesarLinkMaps(event) {
             const link = document.getElementById('mapsLink').value.trim();
@@ -527,12 +436,8 @@
             btn.innerHTML = '<span class="loading"></span>';
             btn.disabled = true;
 
-            const inputField = document.getElementById('mapsLink');
-            const originalPlaceholder = inputField.placeholder;
-            inputField.placeholder = 'Procesando link...';
-
             try {
-                // Seguir redirecciones (para links cortos)
+                // Seguir redirecciones (para links cortos como goo.gl)
                 const response = await fetch(link, { 
                     method: 'HEAD', 
                     redirect: 'follow',
@@ -542,15 +447,19 @@
                 const finalUrl = response.url;
                 console.log('URL expandida:', finalUrl);
                 
-                // Extraer coordenadas
-                const coords = extraerCoordenadasDeUrl(finalUrl);
+                // Buscar coordenadas en formato @lat,lng
+                const match = finalUrl.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
                 
-                if (coords) {
-                    const latLng = new google.maps.LatLng(coords.lat, coords.lng);
+                if (match) {
+                    const lat = parseFloat(match[1]);
+                    const lng = parseFloat(match[2]);
+                    
+                    const latLng = new google.maps.LatLng(lat, lng);
                     map.setCenter(latLng);
                     map.setZoom(18);
                     setCliente(latLng);
-                    inputField.value = '';
+                    
+                    document.getElementById('mapsLink').value = '';
                     alert("✅ Ubicación encontrada automáticamente");
                 } else {
                     alert("❌ No se encontraron coordenadas en el link");
@@ -561,33 +470,7 @@
             } finally {
                 btn.innerHTML = originalHtml;
                 btn.disabled = false;
-                inputField.placeholder = originalPlaceholder;
-                lucide.createIcons();
             }
-        }
-
-        function extraerCoordenadasDeUrl(url) {
-            const patrones = [
-                { regex: /@(-?\d+\.\d+),(-?\d+\.\d+)/, indices: [1, 2] },
-                { regex: /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/, indices: [1, 2] },
-                { regex: /[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/, indices: [1, 2] },
-                { regex: /\/search\/(-?\d+\.\d+),(-?\d+\.\d+)/, indices: [1, 2] },
-                { regex: /[?&]ll=(-?\d+\.\d+),(-?\d+\.\d+)/, indices: [1, 2] },
-                { regex: /[?&]center=(-?\d+\.\d+),(-?\d+\.\d+)/, indices: [1, 2] },
-                { regex: /\/place\/[^@]*@(-?\d+\.\d+),(-?\d+\.\d+)/, indices: [1, 2] }
-            ];
-
-            for (let patron of patrones) {
-                const match = url.match(patron.regex);
-                if (match) {
-                    const lat = parseFloat(match[patron.indices[0]]);
-                    const lng = parseFloat(match[patron.indices[1]]);
-                    if (!isNaN(lat) && !isNaN(lng)) {
-                        return { lat, lng };
-                    }
-                }
-            }
-            return null;
         }
 
         function calcular() {
@@ -644,7 +527,6 @@
             
             const nombre = document.getElementById('nombre').value || "Cliente";
             const tel = document.getElementById('telefono').value || "No provisto";
-            const dir = document.getElementById('direccion').value || "Ver mapa";
             const costo = document.getElementById('costoFinal').innerText;
             const dist = document.getElementById('distanciaTexto').innerText;
             const localName = document.getElementById('localSelect').options[document.getElementById('localSelect').selectedIndex].text;
@@ -653,8 +535,7 @@
             const mensaje = `*NUEVO PEDIDO DELIVERY*%0A%0A` +
                 `*Local:* ${localName}%0A` +
                 `*Cliente:* ${nombre}%0A` +
-                `*Teléfono:* ${tel}%0A` +
-                `*Dirección:* ${dir}%0A%0A` +
+                `*Teléfono:* ${tel}%0A%0A` +
                 `*Costo:* ${costo}%0A` +
                 `*${dist}*%0A%0A` +
                 `*Ubicación:* ${mapsLink}`;
