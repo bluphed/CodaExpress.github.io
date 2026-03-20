@@ -468,8 +468,30 @@
         }
 
         // 🔥 5. Si NO encontró → abrir link (mejor solución real)
-        alert("⚠️ Este tipo de link no se puede leer directamente.\n\nSe abrirá, copia el link que aparece arriba y pégalo aquí.");
+        // 🔥 5. Intentar con backend (links cortos)
+if (esLinkCorto(link)) {
+    const coords = await obtenerCoordenadasDesdeBackend(link);
+
+    if (coords) {
+        const latLng = new google.maps.LatLng(coords.lat, coords.lng);
+
+        map.setCenter(latLng);
+        map.setZoom(18);
+        setCliente(latLng);
+
+        linkInput.value = '';
+        alert("✅ Ubicación encontrada automáticamente (link corto)");
+        return;
+    } else {
+        alert("⚠️ No se pudo procesar automáticamente el link corto");
         window.open(link, "_blank");
+        return;
+    }
+}
+
+// 🔹 fallback normal
+alert("⚠️ Este tipo de link no se puede leer directamente.\n\nSe abrirá, copia el link que aparece arriba y pégalo aquí.");
+window.open(link, "_blank");
 
     } catch (error) {
         console.error(error);
