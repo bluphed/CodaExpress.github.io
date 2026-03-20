@@ -143,10 +143,6 @@
             gap: 6px;
         }
 
-        .time-badge i {
-            font-size: 1rem;
-        }
-
         .fade-in {
             animation: fadeIn 0.5s ease-in;
         }
@@ -186,14 +182,14 @@
                         Ubicación del Pedido
                     </h2>
                     
-                    <!-- Link de Google Maps -->
+                    <!-- Link de Google Maps - VERSIÓN MEJORADA -->
                     <div class="mb-4 p-3 bg-card rounded-xl border border-custom">
                         <label class="block text-sm font-medium text-secondary mb-2">
                             <i data-lucide="link" class="inline w-4 h-4 mr-1" style="color: var(--color-coda);"></i>
                             Link de Google Maps
                         </label>
                         <div class="flex gap-2">
-                            <input type="text" id="mapsLink" placeholder="Ej: https://maps.app.goo.gl/..." 
+                            <input type="text" id="mapsLink" placeholder="Ej: https://maps.app.goo.gl/7VVWt8VCDiwqpMPT7" 
                                    class="flex-1 p-3 rounded-xl border border-custom bg-card text-primary focus:ring-2 outline-none text-sm"
                                    style="focus:ring-color: var(--color-coda);">
                             <button onclick="procesarLinkMaps(event)" 
@@ -201,7 +197,9 @@
                                 <i data-lucide="search" class="w-5 h-5"></i>
                             </button>
                         </div>
-                        <p class="text-xs text-secondary mt-1">Los enlaces cortos se procesan automáticamente</p>
+                        <p class="text-xs text-secondary mt-1">
+                            ✅ Lee automáticamente links cortos y largos
+                        </p>
                     </div>
                     
                     <!-- Mapa -->
@@ -245,7 +243,7 @@
                               class="w-full p-3 rounded-xl border border-custom bg-card text-primary focus:ring-2 outline-none h-24"></textarea>
                 </div>
 
-                <!-- Tarjeta de resultado MEJORADA con tiempo estimado -->
+                <!-- Tarjeta de resultado -->
                 <div id="resultadoCard" class="bg-coda p-6 rounded-2xl text-white shadow-lg hidden fade-in">
                     <div class="flex items-center gap-2 mb-4">
                         <i data-lucide="clock" class="w-5 h-5 text-white/80"></i>
@@ -315,11 +313,10 @@
             
             body.classList.toggle('dark-mode');
             
-            // Actualizar icono y texto
             if (body.classList.contains('dark-mode')) {
                 themeIcon.setAttribute('data-lucide', 'sun');
                 themeText.textContent = 'Modo claro';
-                themeColor.setAttribute('content', '#0f172a'); // Color oscuro para la barra de estado
+                themeColor.setAttribute('content', '#0f172a');
                 localStorage.setItem('theme', 'dark');
             } else {
                 themeIcon.setAttribute('data-lucide', 'moon');
@@ -328,7 +325,6 @@
                 localStorage.setItem('theme', 'light');
             }
             
-            // Actualizar iconos de Lucide
             lucide.createIcons();
         }
 
@@ -404,10 +400,7 @@
                 }
             });
 
-            // Cargar tema guardado
             loadTheme();
-            
-            // Inicializar iconos
             lucide.createIcons();
         }
 
@@ -441,7 +434,7 @@
         }
 
         // ============================================
-        // FUNCIÓN PARA PROCESAR LINKS DE GOOGLE MAPS
+        // FUNCIÓN MEJORADA: Procesar links de Google Maps
         // ============================================
         async function procesarLinkMaps(event) {
             const link = document.getElementById('mapsLink').value.trim();
@@ -455,166 +448,33 @@
             btn.innerHTML = '<span class="loading"></span>';
             btn.disabled = true;
 
+            const inputField = document.getElementById('mapsLink');
+            const originalPlaceholder = inputField.placeholder;
+            inputField.placeholder = 'Procesando link...';
+
             try {
-                // Seguir redirección
-                const response = await fetch(link, { method: 'HEAD', redirect: 'follow' });
-                const finalUrl = response.url;
+                // PASO 1: Seguir redirecciones (esto permite links cortos)
+                const response = await fetch(link, { 
+                    method: 'HEAD', 
+                    redirect: 'follow',
+                    cache: 'no-cache'
+                });
                 
-                // Extraer coordenadas
-                const coords = extraerCoordenadas(finalUrl);
+                const finalUrl = response.url;
+                console.log('URL expandida:', finalUrl);
+                
+                // PASO 2: Extraer coordenadas con múltiples patrones
+                const coords = extraerCoordenadasDeUrl(finalUrl);
                 
                 if (coords) {
                     const latLng = new google.maps.LatLng(coords.lat, coords.lng);
                     map.setCenter(latLng);
                     map.setZoom(18);
                     setCliente(latLng);
-                    document.getElementById('mapsLink').value = '';
-                    alert("✅ Ubicación encontrada");
+                    inputField.value = '';
+                    alert("✅ Ubicación encontrada automáticamente");
                 } else {
                     alert("❌ No se encontraron coordenadas en el link");
                 }
             } catch (error) {
-                alert("❌ Error al procesar el link");
-            } finally {
-                btn.innerHTML = originalHtml;
-                btn.disabled = false;
-                lucide.createIcons();
-            }
-        }
-
-        function extraerCoordenadas(url) {
-            const patrones = [
-                /@(-?\d+\.\d+),(-?\d+\.\d+)/,
-                /[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/,
-                /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/
-            ];
-            
-            for (let patron of patrones) {
-                const match = url.match(patron);
-                if (match) {
-                    return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
-                }
-            }
-            return null;
-        }
-
-        // ============================================
-        // FUNCIÓN PRINCIPAL: CALCULAR COSTO Y TIEMPO
-        // ============================================
-        function calcular() {
-            if (!clientePos) {
-                alert("Por favor, marca la ubicación del cliente en el mapa.");
-                return;
-            }
-
-            const dist = google.maps.geometry.spherical.computeDistanceBetween(
-                new google.maps.LatLng(restaurantePos.lat, restaurantePos.lng),
-                new google.maps.LatLng(clientePos.lat, clientePos.lng)
-            );
-            const km = dist / 1000;
-
-            // Cálculo de costo
-            let total = 2.00;
-            let detalle = "Base $2.00 (1.4 km)";
-            
-            if (km > 1.4) {
-                const kmExtras = km - 1.4;
-                const segmentos = Math.ceil(kmExtras / 0.7);
-                const extraTotal = segmentos * 0.25;
-                total = 2.00 + extraTotal;
-                detalle = `Base + ${segmentos}×700m → $${extraTotal.toFixed(2)} extra`;
-            }
-            total = Math.ceil(total * 4) / 4;
-
-            // ============================================
-            // NUEVO: Cálculo de tiempo estimado (numeral 10)
-            // ============================================
-            // Velocidad promedio asumida: 30 km/h en ciudad
-            const velocidadPromedio = 30; // km/h
-            const tiempoHoras = km / velocidadPromedio;
-            const tiempoMinutos = Math.round(tiempoHoras * 60);
-            
-            let tiempoTexto = "";
-            let detalleTiempo = "";
-            
-            if (tiempoMinutos < 1) {
-                tiempoTexto = "Menos de 1 min";
-                detalleTiempo = "Entrega muy cercana";
-            } else if (tiempoMinutos < 60) {
-                tiempoTexto = `${tiempoMinutos} min`;
-                detalleTiempo = `Aprox. ${tiempoMinutos} minutos a 30 km/h`;
-            } else {
-                const horas = Math.floor(tiempoMinutos / 60);
-                const minutos = tiempoMinutos % 60;
-                tiempoTexto = `${horas}h ${minutos}min`;
-                detalleTiempo = `Aprox. ${horas}h ${minutos}min a 30 km/h`;
-            }
-
-            // Mostrar resultados
-            document.getElementById('costoFinal').innerText = `$${total.toFixed(2)}`;
-            document.getElementById('distanciaTexto').innerText = `Distancia: ${km.toFixed(2)} km`;
-            document.getElementById('detalleCosto').innerText = detalle;
-            
-            // Actualizar tiempo estimado
-            document.getElementById('tiempoEstimado').innerHTML = `
-                <i data-lucide="clock" class="w-4 h-4"></i>
-                <span>${tiempoTexto}</span>
-            `;
-            document.getElementById('detalleTiempo').innerText = detalleTiempo;
-            
-            document.getElementById('resultadoCard').classList.remove('hidden');
-            document.getElementById('resultadoCard').scrollIntoView({ behavior: 'smooth' });
-            
-            // Actualizar iconos
-            lucide.createIcons();
-        }
-
-        // ============================================
-        // FUNCIÓN: Enviar por WhatsApp
-        // ============================================
-        function enviarWhatsApp() {
-            if (!clientePos) {
-                alert("Primero debes calcular el costo.");
-                return;
-            }
-            
-            const nombre = document.getElementById('nombre').value || "Cliente";
-            const tel = document.getElementById('telefono').value || "No provisto";
-            const dir = document.getElementById('direccion').value || "Ver mapa";
-            const costo = document.getElementById('costoFinal').innerText;
-            const dist = document.getElementById('distanciaTexto').innerText;
-            const detalle = document.getElementById('detalleCosto').innerText;
-            const tiempo = document.getElementById('tiempoEstimado').innerText.replace('clock', '').trim();
-            
-            const localSelect = document.getElementById('localSelect');
-            const localName = localSelect.options[localSelect.selectedIndex].text;
-
-            const mapsLink = `https://www.google.com/maps?q=${clientePos.lat},${clientePos.lng}`;
-
-            const mensaje = `*NUEVO PEDIDO DELIVERY*%0A%0A` +
-                `*Local:* ${localName}%0A` +
-                `*Cliente:* ${nombre}%0A` +
-                `*Teléfono:* ${tel}%0A` +
-                `*Dirección:* ${dir}%0A%0A` +
-                `*Costo:* ${costo}%0A` +
-                `*${dist}*%0A` +
-                `*Tiempo estimado:* ${tiempo}%0A` +
-                `*Detalle:* ${detalle}%0A%0A` +
-                `*Ubicación en Maps:* ${mapsLink}`;
-
-            window.open(`https://wa.me/593959698463?text=${mensaje}`, '_blank');
-        }
-
-        // ============================================
-        // SERVICE WORKER
-        // ============================================
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('✅ Service Worker registrado'))
-                    .catch(err => console.log('❌ Error al registrar Service Worker:', err));
-            });
-        }
-    </script>
-</body>
-</html>
+                console.error("Error:", e
