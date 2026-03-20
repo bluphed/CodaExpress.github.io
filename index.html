@@ -3,22 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coda Express</title>
+    <title>CodaExpress</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="service-worker.js"></script>
 </head>
 <body>
     <header>
-        <h1>Welcome to Coda Express</h1>
+        <h1>Welcome to CodaExpress</h1>
+        <div id="contact" class="whatsapp">
+            <a href="https://wa.me/1234567890" target="_blank">Contact Us on WhatsApp</a>
+        </div>
     </header>
     <main>
-        <form>
-            <input type="text" class="focus:ring-2" placeholder="Enter text">
-            <button type="submit" class="w-full mt-5 bg-white text-coda font-bold py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-white/90 transition-all btn-touch shadow-sm">Submit</button>
-        </form>
-        <button class="w-full bg-coda text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 transition-all shadow-lg hover:opacity-90 active:scale-95 btn-touch">Click Me!</button>
+        <div id="map"></div>
+        <div id="delivery-calculator">
+            <input type="text" id="zip-code" placeholder="Enter Zip Code">
+            <button id="calculate-delivery">Calculate Delivery</button>
+            <div id="delivery-cost"></div>
+        </div>
     </main>
     <footer>
-        <p>&copy; 2026 Coda Express</p>
+        <p>&copy; 2026 CodaExpress. All rights reserved.</p>
     </footer>
+    <script>
+        function initMap() {
+            // Initialize map here
+        }
+
+        document.getElementById('calculate-delivery').addEventListener('click', function() {
+            // Delivery calculation logic here
+        });
+
+        // Registration of service worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js')
+            .then(() => console.log('Service Worker Registered'));
+        }
+    </script>
 </body>
 </html>
