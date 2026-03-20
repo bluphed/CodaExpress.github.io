@@ -423,12 +423,69 @@
         // PROCESAR LINK DE GOOGLE MAPS (CORTO O LARGO)
         // ============================================
         async function procesarLinkMaps(event) {
-            const link = document.getElementById('mapsLink').value.trim();
-            if (!link) {
-                alert("❌ Por favor, pega un link de Google Maps");
+    const linkInput = document.getElementById('mapsLink');
+    let link = linkInput.value.trim();
+
+    if (!link) {
+        alert("❌ Por favor, pega un link de Google Maps");
+        return;
+    }
+
+    const btn = event.currentTarget;
+    const originalHtml = btn.innerHTML;
+    btn.innerHTML = '<span class="loading"></span>';
+    btn.disabled = true;
+
+    try {
+        // 🔹 1. Intentar detectar coordenadas directamente
+        let match = link.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+
+        if (!match) {
+            match = link.match(/q=(-?\d+\.\d+),(-?\d+\.\d+)/);
+        }
+
+        // 🔹 2. Intentar expandir link corto
+        if (!match) {
+            try {
+                const response = await fetch(link, {
+                    method: 'GET',
+                    redirect: 'follow'
+                });
+
+                link = response.url;
+                match = link.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+
+            } catch (e) {
+                alert("⚠️ No se pudo leer el link corto.\n\nSe abrirá para que copies el link completo.");
+                window.open(link, "_blank");
                 return;
             }
+        }
 
+        // 🔹 3. Aplicar coordenadas
+        if (match) {
+            const lat = parseFloat(match[1]);
+            const lng = parseFloat(match[2]);
+            const latLng = new google.maps.LatLng(lat, lng);
+
+            map.setCenter(latLng);
+            map.setZoom(18);
+            setCliente(latLng);
+
+            linkInput.value = '';
+            alert("✅ Ubicación encontrada automáticamente");
+        } else {
+            alert("❌ No se pudieron obtener coordenadas");
+        }
+
+    } catch (error) {
+        console.error("Error:", error);
+        alert("❌ Error al procesar el link");
+    } finally {
+        btn.innerHTML = originalHtml;
+        btn.disabled = false;
+    }
+}
             const btn = event.currentTarget;
             const originalHtml = btn.innerHTML;
             btn.innerHTML = '<span class="loading"></span>';
