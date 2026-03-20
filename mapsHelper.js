@@ -10,7 +10,7 @@ function esLinkCorto(link) {
 // ============================================
 async function obtenerCoordenadasDesdeBackend(link) {
     try {
-        const response = await fetch('https://TU_BACKEND.onrender.com/expandir', {
+        const response = await fetch('https://https://bluphed.github.io/CodaExpress.github.io/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
