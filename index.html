@@ -437,91 +437,48 @@
     btn.disabled = true;
 
     try {
-        // 🔹 1. Intentar detectar coordenadas directamente
-        let match = link.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+        let match = null;
 
+        // 🔹 1. Detectar formato @lat,lng
+        match = link.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+
+        // 🔹 2. Detectar formato ?q=lat,lng
         if (!match) {
             match = link.match(/q=(-?\d+\.\d+),(-?\d+\.\d+)/);
         }
 
-        // 🔹 2. Intentar expandir link corto
+        // 🔹 3. Detectar formato !3dLAT!4dLNG (MUY IMPORTANTE)
         if (!match) {
-            try {
-                const response = await fetch(link, {
-                    method: 'GET',
-                    redirect: 'follow'
-                });
-
-                link = response.url;
-                match = link.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
-
-            } catch (e) {
-                alert("⚠️ No se pudo leer el link corto.\n\nSe abrirá para que copies el link completo.");
-                window.open(link, "_blank");
-                return;
-            }
+            match = link.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
         }
 
-        // 🔹 3. Aplicar coordenadas
+        // 🔹 4. Si encontró coordenadas
         if (match) {
             const lat = parseFloat(match[1]);
             const lng = parseFloat(match[2]);
-            const latLng = new google.maps.LatLng(lat, lng);
 
+            const latLng = new google.maps.LatLng(lat, lng);
             map.setCenter(latLng);
             map.setZoom(18);
             setCliente(latLng);
 
             linkInput.value = '';
             alert("✅ Ubicación encontrada automáticamente");
-        } else {
-            alert("❌ No se pudieron obtener coordenadas");
+            return;
         }
 
+        // 🔥 5. Si NO encontró → abrir link (mejor solución real)
+        alert("⚠️ Este tipo de link no se puede leer directamente.\n\nSe abrirá, copia el link que aparece arriba y pégalo aquí.");
+        window.open(link, "_blank");
+
     } catch (error) {
-        console.error("Error:", error);
+        console.error(error);
         alert("❌ Error al procesar el link");
     } finally {
         btn.innerHTML = originalHtml;
         btn.disabled = false;
     }
-}
-            const btn = event.currentTarget;
-            const originalHtml = btn.innerHTML;
-            btn.innerHTML = '<span class="loading"></span>';
-            btn.disabled = true;
 
-            try {
-                // Seguir redirecciones para obtener URL final
-                const response = await fetch(link, { 
-                    method: 'HEAD', 
-                    redirect: 'follow',
-                    cache: 'no-cache'
-                });
-                const finalUrl = response.url;
-                
-                // Extraer coordenadas con patrón @lat,lng
-                const match = finalUrl.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
-                
-                if (match) {
-                    const lat = parseFloat(match[1]);
-                    const lng = parseFloat(match[2]);
-                    const latLng = new google.maps.LatLng(lat, lng);
-                    map.setCenter(latLng);
-                    map.setZoom(18);
-                    setCliente(latLng);
-                    document.getElementById('mapsLink').value = '';
-                    alert("✅ Ubicación encontrada automáticamente");
-                } else {
-                    alert("❌ No se encontraron coordenadas en el link");
-                }
-            } catch (error) {
-                console.error("Error al procesar link:", error);
-                alert("❌ Error al procesar el link: " + error.message);
-            } finally {
-                btn.innerHTML = originalHtml;
-                btn.disabled = false;
-            }
         }
 
         // ============================================
