@@ -95,11 +95,8 @@
             height: 400px;
             width: 100%;
             border-radius: 0.75rem;
-            filter: var(--map-filter, none);
-        }
-
-        .dark-mode #map {
-            --map-filter: invert(0.9) hue-rotate(180deg);
+            background-color: #e2e8f0;
+            border: 2px solid var(--color-coda);
         }
 
         .btn-touch {
@@ -152,6 +149,59 @@
             to { opacity: 1; transform: translateY(0); }
         }
     </style>
+    
+    <!-- Script de depuración para el mapa -->
+    <script>
+        // Forzar que el mapa se inicialice correctamente
+        window.initMap = function() {
+            console.log("🟢 Inicializando mapa...");
+            try {
+                const mapElement = document.getElementById('map');
+                if (!mapElement) {
+                    console.error("❌ No se encontró el elemento #map");
+                    return;
+                }
+                
+                const map = new google.maps.Map(mapElement, {
+                    center: { lat: -0.245197, lng: -79.158230 },
+                    zoom: 14,
+                    gestureHandling: 'greedy',
+                    zoomControl: true,
+                    mapTypeControl: false,
+                    streetViewControl: false,
+                    fullscreenControl: true
+                });
+                
+                console.log("✅ Mapa inicializado correctamente");
+                
+                // Guardar mapa en variable global
+                window.mapaGlobal = map;
+                
+                // Agregar marcador de prueba
+                new google.maps.Marker({
+                    position: { lat: -0.245197, lng: -79.158230 },
+                    map: map,
+                    title: "La Cremita",
+                    icon: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png'
+                });
+                
+                // Mostrar mensaje de éxito en el mapa
+                const infoWindow = new google.maps.InfoWindow({
+                    content: '<div style="color: #DE440D; font-weight: bold;">📍 Coda Express</div>'
+                });
+                infoWindow.setPosition({ lat: -0.245197, lng: -79.158230 });
+                infoWindow.open(map);
+                
+            } catch (error) {
+                console.error("❌ Error al inicializar mapa:", error);
+                document.getElementById('map').innerHTML = `
+                    <div class="flex items-center justify-center h-full bg-red-100 text-red-600 p-4">
+                        Error al cargar el mapa: ${error.message}
+                    </div>
+                `;
+            }
+        };
+    </script>
 </head>
 <body>
 
@@ -182,7 +232,7 @@
                         Ubicación del Pedido
                     </h2>
                     
-                    <!-- Link de Google Maps - VERSIÓN MEJORADA -->
+                    <!-- Link de Google Maps -->
                     <div class="mb-4 p-3 bg-card rounded-xl border border-custom">
                         <label class="block text-sm font-medium text-secondary mb-2">
                             <i data-lucide="link" class="inline w-4 h-4 mr-1" style="color: var(--color-coda);"></i>
@@ -204,7 +254,7 @@
                     
                     <!-- Mapa -->
                     <div class="relative">
-                        <div id="map" class="bg-gray-200 rounded-xl"></div>
+                        <div id="map" class="bg-gray-200 rounded-xl" style="height: 400px;"></div>
                         <div class="absolute bottom-2 left-2 glass-effect text-white px-3 py-1 rounded-full text-xs flex items-center gap-1">
                             <i data-lucide="move" class="w-3 h-3"></i>
                             <span>Arrastra para mover</span>
@@ -284,8 +334,8 @@
         </div>
     </div>
 
-    <!-- Google Maps API -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDFR0mPU-jz-crPgioPus5UEdfeEZ90yk4&libraries=geometry,places&callback=initMap" async defer></script>
+    <!-- Google Maps API - CON CALLBACK EXPLÍCITO -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDFR0mPU-jz-crPgioPus5UEdfeEZ90yk4&libraries=geometry,places&callback=initMap&v=weekly" async defer></script>
 
     <script>
         // ============================================
@@ -350,58 +400,87 @@
         }
 
         // ============================================
-        // INICIALIZACIÓN DEL MAPA
+        // INICIALIZACIÓN DEL MAPA (VERSIÓN CORREGIDA)
         // ============================================
         function initMap() {
-            map = new google.maps.Map(document.getElementById("map"), {
-                center: restaurantePos,
-                zoom: 14,
-                gestureHandling: 'greedy',
-                zoomControl: true,
-                mapTypeControl: false,
-                streetViewControl: false,
-                fullscreenControl: true
-            });
-
-            geocoder = new google.maps.Geocoder();
-
-            markerRestaurante = new google.maps.Marker({
-                position: restaurantePos,
-                map: map,
-                title: "Local",
-                icon: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png'
-            });
-
-            map.addListener("click", (e) => {
-                setCliente(e.latLng);
-            });
-
-            document.getElementById('localSelect').addEventListener('change', function() {
-                const val = this.value;
-                if (LOCALES[val]) {
-                    restaurantePos = LOCALES[val];
-                    markerRestaurante.setPosition(restaurantePos);
-                    map.panTo(restaurantePos);
-                } else if (val === 'custom') {
-                    if (navigator.geolocation) {
-                        navigator.geolocation.getCurrentPosition(
-                            (position) => {
-                                restaurantePos = {
-                                    lat: position.coords.latitude,
-                                    lng: position.coords.longitude
-                                };
-                                markerRestaurante.setPosition(restaurantePos);
-                                map.setCenter(restaurantePos);
-                                map.setZoom(16);
-                            },
-                            () => alert("No se pudo obtener tu ubicación")
-                        );
-                    }
+            console.log("🟢 Inicializando mapa desde script principal...");
+            try {
+                const mapElement = document.getElementById('map');
+                if (!mapElement) {
+                    console.error("❌ Elemento #map no encontrado");
+                    return;
                 }
-            });
 
-            loadTheme();
-            lucide.createIcons();
+                map = new google.maps.Map(mapElement, {
+                    center: restaurantePos,
+                    zoom: 14,
+                    gestureHandling: 'greedy',
+                    zoomControl: true,
+                    mapTypeControl: false,
+                    streetViewControl: false,
+                    fullscreenControl: true
+                });
+
+                geocoder = new google.maps.Geocoder();
+
+                markerRestaurante = new google.maps.Marker({
+                    position: restaurantePos,
+                    map: map,
+                    title: "La Cremita",
+                    icon: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png'
+                });
+
+                map.addListener("click", (e) => {
+                    setCliente(e.latLng);
+                });
+
+                document.getElementById('localSelect').addEventListener('change', function() {
+                    const val = this.value;
+                    if (LOCALES[val]) {
+                        restaurantePos = LOCALES[val];
+                        markerRestaurante.setPosition(restaurantePos);
+                        map.panTo(restaurantePos);
+                    } else if (val === 'custom') {
+                        if (navigator.geolocation) {
+                            navigator.geolocation.getCurrentPosition(
+                                (position) => {
+                                    restaurantePos = {
+                                        lat: position.coords.latitude,
+                                        lng: position.coords.longitude
+                                    };
+                                    markerRestaurante.setPosition(restaurantePos);
+                                    map.setCenter(restaurantePos);
+                                    map.setZoom(16);
+                                },
+                                () => alert("No se pudo obtener tu ubicación")
+                            );
+                        }
+                    }
+                });
+
+                loadTheme();
+                lucide.createIcons();
+                
+                console.log("✅ Mapa inicializado correctamente");
+                
+                // InfoWindow de bienvenida
+                const infoWindow = new google.maps.InfoWindow({
+                    content: '<div style="color: #DE440D; font-weight: bold;">📍 Coda Express - Toca el mapa para marcar</div>'
+                });
+                infoWindow.setPosition(restaurantePos);
+                infoWindow.open(map);
+                
+            } catch (error) {
+                console.error("❌ Error en initMap:", error);
+                document.getElementById('map').innerHTML = `
+                    <div class="flex items-center justify-center h-full bg-red-100 text-red-600 p-4 text-center">
+                        Error al cargar el mapa: ${error.message}<br>
+                        <button onclick="location.reload()" class="mt-2 bg-coda text-white px-4 py-2 rounded">
+                            Reintentar
+                        </button>
+                    </div>
+                `;
+            }
         }
 
         function setCliente(latLng) {
@@ -453,7 +532,7 @@
             inputField.placeholder = 'Procesando link...';
 
             try {
-                // PASO 1: Seguir redirecciones (esto permite links cortos)
+                // Seguir redirecciones (para links cortos)
                 const response = await fetch(link, { 
                     method: 'HEAD', 
                     redirect: 'follow',
@@ -463,7 +542,7 @@
                 const finalUrl = response.url;
                 console.log('URL expandida:', finalUrl);
                 
-                // PASO 2: Extraer coordenadas con múltiples patrones
+                // Extraer coordenadas
                 const coords = extraerCoordenadasDeUrl(finalUrl);
                 
                 if (coords) {
@@ -477,4 +556,120 @@
                     alert("❌ No se encontraron coordenadas en el link");
                 }
             } catch (error) {
-                console.error("Error:", e
+                console.error("Error:", error);
+                alert("❌ Error al procesar el link: " + error.message);
+            } finally {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+                inputField.placeholder = originalPlaceholder;
+                lucide.createIcons();
+            }
+        }
+
+        function extraerCoordenadasDeUrl(url) {
+            const patrones = [
+                { regex: /@(-?\d+\.\d+),(-?\d+\.\d+)/, indices: [1, 2] },
+                { regex: /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/, indices: [1, 2] },
+                { regex: /[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/, indices: [1, 2] },
+                { regex: /\/search\/(-?\d+\.\d+),(-?\d+\.\d+)/, indices: [1, 2] },
+                { regex: /[?&]ll=(-?\d+\.\d+),(-?\d+\.\d+)/, indices: [1, 2] },
+                { regex: /[?&]center=(-?\d+\.\d+),(-?\d+\.\d+)/, indices: [1, 2] },
+                { regex: /\/place\/[^@]*@(-?\d+\.\d+),(-?\d+\.\d+)/, indices: [1, 2] }
+            ];
+
+            for (let patron of patrones) {
+                const match = url.match(patron.regex);
+                if (match) {
+                    const lat = parseFloat(match[patron.indices[0]]);
+                    const lng = parseFloat(match[patron.indices[1]]);
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                        return { lat, lng };
+                    }
+                }
+            }
+            return null;
+        }
+
+        function calcular() {
+            if (!clientePos) {
+                alert("Por favor, marca la ubicación del cliente en el mapa.");
+                return;
+            }
+
+            const dist = google.maps.geometry.spherical.computeDistanceBetween(
+                new google.maps.LatLng(restaurantePos.lat, restaurantePos.lng),
+                new google.maps.LatLng(clientePos.lat, clientePos.lng)
+            );
+            const km = dist / 1000;
+
+            // Cálculo de costo
+            let total = 2.00;
+            let detalle = "Base $2.00 (1.4 km)";
+            
+            if (km > 1.4) {
+                const kmExtras = km - 1.4;
+                const segmentos = Math.ceil(kmExtras / 0.7);
+                const extraTotal = segmentos * 0.25;
+                total = 2.00 + extraTotal;
+                detalle = `Base + ${segmentos}×700m → $${extraTotal.toFixed(2)} extra`;
+            }
+            total = Math.ceil(total * 4) / 4;
+
+            // Tiempo estimado
+            const velocidadPromedio = 30;
+            const tiempoMinutos = Math.round((km / velocidadPromedio) * 60);
+            
+            let tiempoTexto = tiempoMinutos < 60 ? 
+                `${tiempoMinutos} min` : 
+                `${Math.floor(tiempoMinutos/60)}h ${tiempoMinutos%60}min`;
+
+            document.getElementById('costoFinal').innerText = `$${total.toFixed(2)}`;
+            document.getElementById('distanciaTexto').innerText = `Distancia: ${km.toFixed(2)} km`;
+            document.getElementById('detalleCosto').innerText = detalle;
+            document.getElementById('tiempoEstimado').innerHTML = `
+                <i data-lucide="clock" class="w-4 h-4"></i>
+                <span>${tiempoTexto}</span>
+            `;
+            
+            document.getElementById('resultadoCard').classList.remove('hidden');
+            document.getElementById('resultadoCard').scrollIntoView({ behavior: 'smooth' });
+            lucide.createIcons();
+        }
+
+        function enviarWhatsApp() {
+            if (!clientePos) {
+                alert("Primero debes calcular el costo.");
+                return;
+            }
+            
+            const nombre = document.getElementById('nombre').value || "Cliente";
+            const tel = document.getElementById('telefono').value || "No provisto";
+            const dir = document.getElementById('direccion').value || "Ver mapa";
+            const costo = document.getElementById('costoFinal').innerText;
+            const dist = document.getElementById('distanciaTexto').innerText;
+            const localName = document.getElementById('localSelect').options[document.getElementById('localSelect').selectedIndex].text;
+            const mapsLink = `https://www.google.com/maps?q=${clientePos.lat},${clientePos.lng}`;
+
+            const mensaje = `*NUEVO PEDIDO DELIVERY*%0A%0A` +
+                `*Local:* ${localName}%0A` +
+                `*Cliente:* ${nombre}%0A` +
+                `*Teléfono:* ${tel}%0A` +
+                `*Dirección:* ${dir}%0A%0A` +
+                `*Costo:* ${costo}%0A` +
+                `*${dist}*%0A%0A` +
+                `*Ubicación:* ${mapsLink}`;
+
+            window.open(`https://wa.me/593959698463?text=${mensaje}`, '_blank');
+        }
+
+        // Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('✅ SW registrado'))
+                    .catch(err => console.log('❌ Error SW:', err));
+            });
+        }
+    </script>
+</body>
+</html>
