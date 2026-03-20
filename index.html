@@ -171,7 +171,7 @@
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- Columna Izquierda -->
+            <!-- Columna Izquierda: Mapa y link -->
             <div class="space-y-6">
                 <div class="bg-card p-4 rounded-2xl border border-custom shadow-sm">
                     <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -225,7 +225,7 @@
                 </div>
             </div>
 
-            <!-- Columna Derecha -->
+            <!-- Columna Derecha: Datos del cliente y resultado -->
             <div class="space-y-6">
                 <div class="bg-card p-6 rounded-2xl border border-custom shadow-sm">
                     <h2 class="text-lg font-semibold flex items-center gap-2 mb-4">
@@ -236,10 +236,10 @@
                            class="w-full p-3 rounded-xl border border-custom bg-card text-primary focus:ring-2 outline-none btn-touch mb-3">
                     <input type="tel" id="telefono" placeholder="Teléfono" 
                            class="w-full p-3 rounded-xl border border-custom bg-card text-primary focus:ring-2 outline-none btn-touch">
-                    <!-- EL CUADRO DE DIRECCIÓN FUE ELIMINADO -->
+                    <!-- Campo de dirección eliminado -->
                 </div>
 
-                <!-- Tarjeta de resultado -->
+                <!-- Tarjeta de resultado con tiempo estimado -->
                 <div id="resultadoCard" class="bg-coda p-6 rounded-2xl text-white shadow-lg hidden fade-in">
                     <div class="flex items-center gap-2 mb-4">
                         <i data-lucide="clock" class="w-5 h-5 text-white/80"></i>
@@ -280,7 +280,7 @@
         </div>
     </div>
 
-    <!-- Google Maps API -->
+    <!-- Google Maps API (con callback initMap) -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDFR0mPU-jz-crPgioPus5UEdfeEZ90yk4&libraries=geometry,places&callback=initMap&v=weekly" async defer></script>
 
     <script>
@@ -320,7 +320,6 @@
                 themeColor.setAttribute('content', '#DE440D');
                 localStorage.setItem('theme', 'light');
             }
-            
             lucide.createIcons();
         }
 
@@ -339,6 +338,7 @@
                 themeText.textContent = 'Modo claro';
                 themeColor.setAttribute('content', '#0f172a');
             } else {
+                document.body.classList.remove('dark-mode');
                 themeIcon.setAttribute('data-lucide', 'moon');
                 themeText.textContent = 'Modo oscuro';
                 themeColor.setAttribute('content', '#DE440D');
@@ -349,7 +349,6 @@
         // INICIALIZACIÓN DEL MAPA
         // ============================================
         function initMap() {
-            console.log("🟢 Inicializando mapa...");
             try {
                 map = new google.maps.Map(document.getElementById("map"), {
                     center: restaurantePos,
@@ -396,9 +395,8 @@
 
                 loadTheme();
                 lucide.createIcons();
-                console.log("✅ Mapa listo");
             } catch (error) {
-                console.error("❌ Error en mapa:", error);
+                console.error("Error al inicializar mapa:", error);
             }
         }
 
@@ -422,7 +420,7 @@
         }
 
         // ============================================
-        // FUNCIÓN SIMPLIFICADA PARA LEER LINKS DE GOOGLE MAPS
+        // PROCESAR LINK DE GOOGLE MAPS (CORTO O LARGO)
         // ============================================
         async function procesarLinkMaps(event) {
             const link = document.getElementById('mapsLink').value.trim();
@@ -437,35 +435,31 @@
             btn.disabled = true;
 
             try {
-                // Seguir redirecciones (para links cortos como goo.gl)
+                // Seguir redirecciones para obtener URL final
                 const response = await fetch(link, { 
                     method: 'HEAD', 
                     redirect: 'follow',
                     cache: 'no-cache'
                 });
-                
                 const finalUrl = response.url;
-                console.log('URL expandida:', finalUrl);
                 
-                // Buscar coordenadas en formato @lat,lng
+                // Extraer coordenadas con patrón @lat,lng
                 const match = finalUrl.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
                 
                 if (match) {
                     const lat = parseFloat(match[1]);
                     const lng = parseFloat(match[2]);
-                    
                     const latLng = new google.maps.LatLng(lat, lng);
                     map.setCenter(latLng);
                     map.setZoom(18);
                     setCliente(latLng);
-                    
                     document.getElementById('mapsLink').value = '';
                     alert("✅ Ubicación encontrada automáticamente");
                 } else {
                     alert("❌ No se encontraron coordenadas en el link");
                 }
             } catch (error) {
-                console.error("Error:", error);
+                console.error("Error al procesar link:", error);
                 alert("❌ Error al procesar el link: " + error.message);
             } finally {
                 btn.innerHTML = originalHtml;
@@ -473,6 +467,9 @@
             }
         }
 
+        // ============================================
+        // CALCULAR COSTO Y TIEMPO ESTIMADO
+        // ============================================
         function calcular() {
             if (!clientePos) {
                 alert("Por favor, marca la ubicación del cliente en el mapa.");
@@ -498,14 +495,26 @@
             }
             total = Math.ceil(total * 4) / 4;
 
-            // Tiempo estimado
+            // Tiempo estimado (velocidad promedio 30 km/h)
             const velocidadPromedio = 30;
             const tiempoMinutos = Math.round((km / velocidadPromedio) * 60);
             
-            let tiempoTexto = tiempoMinutos < 60 ? 
-                `${tiempoMinutos} min` : 
-                `${Math.floor(tiempoMinutos/60)}h ${tiempoMinutos%60}min`;
+            let tiempoTexto = "";
+            let detalleTiempo = "";
+            if (tiempoMinutos < 1) {
+                tiempoTexto = "Menos de 1 min";
+                detalleTiempo = "Entrega muy cercana";
+            } else if (tiempoMinutos < 60) {
+                tiempoTexto = `${tiempoMinutos} min`;
+                detalleTiempo = `Aprox. ${tiempoMinutos} minutos a 30 km/h`;
+            } else {
+                const horas = Math.floor(tiempoMinutos / 60);
+                const minutos = tiempoMinutos % 60;
+                tiempoTexto = `${horas}h ${minutos}min`;
+                detalleTiempo = `Aprox. ${horas}h ${minutos}min a 30 km/h`;
+            }
 
+            // Mostrar resultados
             document.getElementById('costoFinal').innerText = `$${total.toFixed(2)}`;
             document.getElementById('distanciaTexto').innerText = `Distancia: ${km.toFixed(2)} km`;
             document.getElementById('detalleCosto').innerText = detalle;
@@ -513,12 +522,16 @@
                 <i data-lucide="clock" class="w-4 h-4"></i>
                 <span>${tiempoTexto}</span>
             `;
+            document.getElementById('detalleTiempo').innerText = detalleTiempo;
             
             document.getElementById('resultadoCard').classList.remove('hidden');
             document.getElementById('resultadoCard').scrollIntoView({ behavior: 'smooth' });
             lucide.createIcons();
         }
 
+        // ============================================
+        // ENVIAR POR WHATSAPP
+        // ============================================
         function enviarWhatsApp() {
             if (!clientePos) {
                 alert("Primero debes calcular el costo.");
@@ -531,19 +544,23 @@
             const dist = document.getElementById('distanciaTexto').innerText;
             const localName = document.getElementById('localSelect').options[document.getElementById('localSelect').selectedIndex].text;
             const mapsLink = `https://www.google.com/maps?q=${clientePos.lat},${clientePos.lng}`;
+            const tiempo = document.getElementById('tiempoEstimado').innerText.replace('clock', '').trim();
 
             const mensaje = `*NUEVO PEDIDO DELIVERY*%0A%0A` +
                 `*Local:* ${localName}%0A` +
                 `*Cliente:* ${nombre}%0A` +
                 `*Teléfono:* ${tel}%0A%0A` +
                 `*Costo:* ${costo}%0A` +
-                `*${dist}*%0A%0A` +
+                `*${dist}*%0A` +
+                `*Tiempo estimado:* ${tiempo}%0A%0A` +
                 `*Ubicación:* ${mapsLink}`;
 
             window.open(`https://wa.me/593959698463?text=${mensaje}`, '_blank');
         }
 
-        // Service Worker
+        // ============================================
+        // SERVICE WORKER
+        // ============================================
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js')
