@@ -236,7 +236,6 @@
                            class="w-full p-3 rounded-xl border border-custom bg-card text-primary focus:ring-2 outline-none btn-touch mb-3">
                     <input type="tel" id="telefono" placeholder="Teléfono" 
                            class="w-full p-3 rounded-xl border border-custom bg-card text-primary focus:ring-2 outline-none btn-touch">
-                    <!-- Campo de dirección eliminado -->
                 </div>
 
                 <!-- Tarjeta de resultado con tiempo estimado -->
@@ -282,10 +281,6 @@
 
     <!-- Google Maps API (con callback initMap) -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDFR0mPU-jz-crPgioPus5UEdfeEZ90yk4&libraries=geometry,places&callback=initMap&v=weekly" async defer></script>
-
-
-<script src="mapsHelper.js"></script>
-
 
     <script>
         // ============================================
@@ -424,113 +419,98 @@
         }
 
         // ============================================
-        // PROCESAR LINK DE GOOGLE MAPS (CORTO O LARGO)
+        // PROCESAR LINK DE GOOGLE MAPS (CORREGIDO)
         // ============================================
-       // ============================================
-// PROCESAR LINK DE GOOGLE MAPS (CORREGIDO)
-// ============================================
-async function procesarLinkMaps(event) {
-    const linkInput = document.getElementById('mapsLink');
-    let link = linkInput.value.trim();
+        async function procesarLinkMaps(event) {
+            const linkInput = document.getElementById('mapsLink');
+            let link = linkInput.value.trim();
 
-    if (!link) {
-        alert("❌ Por favor, pega un link de Google Maps");
-        return;
-    }
-
-    const btn = event.currentTarget;
-    const originalHtml = btn.innerHTML;
-    btn.innerHTML = '<span class="loading"></span>';
-    btn.disabled = true;
-
-    try {
-        // 🔹 1. Intentar extraer coordenadas directamente
-        let coords = extraerCoordenadasDeUrl(link);
-        
-        // 🔹 2. Si no se encontraron y es link corto, seguir redirección
-        if (!coords && esLinkCorto(link)) {
-            console.log("🔍 Link corto detectado, siguiendo redirección...");
-            const response = await fetch(link, { 
-                method: 'HEAD', 
-                redirect: 'follow',
-                cache: 'no-cache'
-            });
-            const finalUrl = response.url;
-            console.log("📌 URL final:", finalUrl);
-            coords = extraerCoordenadasDeUrl(finalUrl);
-        }
-        
-        // 🔹 3. Si se encontraron coordenadas, mover mapa
-        if (coords) {
-            const latLng = new google.maps.LatLng(coords.lat, coords.lng);
-            map.setCenter(latLng);
-            map.setZoom(18);
-            setCliente(latLng);
-            linkInput.value = '';
-            alert("✅ Ubicación encontrada automáticamente");
-            return;
-        }
-        
-        // 🔹 4. Si no se encontraron coordenadas, abrir link para ayuda
-        const userConfirmed = confirm(
-            "⚠️ No se pudo procesar automáticamente este link.\n\n" +
-            "¿Quieres abrirlo en una nueva pestaña para copiar las coordenadas manualmente?\n\n" +
-            "(Busca en la barra de direcciones algo como @-0.245197,-79.158230)"
-        );
-        
-        if (userConfirmed) {
-            window.open(link, '_blank');
-        }
-        
-    } catch (error) {
-        console.error("Error al procesar link:", error);
-        alert("❌ Error al procesar el link: " + error.message);
-    } finally {
-        btn.innerHTML = originalHtml;
-        btn.disabled = false;
-    }
-}
-
-// Función auxiliar para extraer coordenadas de URL
-function extraerCoordenadasDeUrl(url) {
-    const patrones = [
-        /@(-?\d+\.\d+),(-?\d+\.\d+)/,
-        /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/,
-        /[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/,
-        /[?&]ll=(-?\d+\.\d+),(-?\d+\.\d+)/,
-        /[?&]center=(-?\d+\.\d+),(-?\d+\.\d+)/
-    ];
-    
-    for (let patron of patrones) {
-        const match = url.match(patron);
-        if (match) {
-            const lat = parseFloat(match[1]);
-            const lng = parseFloat(match[2]);
-            if (!isNaN(lat) && !isNaN(lng)) {
-                return { lat, lng };
+            if (!link) {
+                alert("❌ Por favor, pega un link de Google Maps");
+                return;
             }
-        }
-    }
-    return null;
-}
 
-// Función auxiliar para detectar links cortos
-function esLinkCorto(link) {
-    return link.includes("maps.app.goo.gl") || 
-           link.includes("goo.gl/maps");
-}
-// 🔹 fallback normal
-alert("⚠️ Este tipo de link no se puede leer directamente.\n\nSe abrirá, copia el link que aparece arriba y pégalo aquí.");
-window.open(link, "_blank");
+            const btn = event.currentTarget;
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<span class="loading"></span>';
+            btn.disabled = true;
 
-    } catch (error) {
-        console.error(error);
-        alert("❌ Error al procesar el link");
-    } finally {
-        btn.innerHTML = originalHtml;
-        btn.disabled = false;
-    }
+            try {
+                // Función auxiliar para extraer coordenadas de URL
+                function extraerCoordenadasDeUrl(url) {
+                    const patrones = [
+                        /@(-?\d+\.\d+),(-?\d+\.\d+)/,
+                        /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/,
+                        /[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/,
+                        /[?&]ll=(-?\d+\.\d+),(-?\d+\.\d+)/,
+                        /[?&]center=(-?\d+\.\d+),(-?\d+\.\d+)/,
+                        /\/place\/[^@]*@(-?\d+\.\d+),(-?\d+\.\d+)/
+                    ];
+                    
+                    for (let patron of patrones) {
+                        const match = url.match(patron);
+                        if (match) {
+                            const lat = parseFloat(match[1]);
+                            const lng = parseFloat(match[2]);
+                            if (!isNaN(lat) && !isNaN(lng)) {
+                                return { lat, lng };
+                            }
+                        }
+                    }
+                    return null;
+                }
 
+                // Función para detectar links cortos
+                function esLinkCorto(link) {
+                    return link.includes("maps.app.goo.gl") || 
+                           link.includes("goo.gl/maps");
+                }
+
+                // 1. Intentar extraer coordenadas directamente
+                let coords = extraerCoordenadasDeUrl(link);
+                
+                // 2. Si no se encontraron y es link corto, seguir redirección
+                if (!coords && esLinkCorto(link)) {
+                    console.log("🔍 Link corto detectado, siguiendo redirección...");
+                    const response = await fetch(link, { 
+                        method: 'HEAD', 
+                        redirect: 'follow',
+                        cache: 'no-cache'
+                    });
+                    const finalUrl = response.url;
+                    console.log("📌 URL expandida:", finalUrl);
+                    coords = extraerCoordenadasDeUrl(finalUrl);
+                }
+                
+                // 3. Si se encontraron coordenadas, mover mapa
+                if (coords) {
+                    const latLng = new google.maps.LatLng(coords.lat, coords.lng);
+                    map.setCenter(latLng);
+                    map.setZoom(18);
+                    setCliente(latLng);
+                    linkInput.value = '';
+                    alert("✅ Ubicación encontrada automáticamente");
+                    return;
+                }
+                
+                // 4. Si no se encontraron coordenadas, abrir link para ayuda
+                const userConfirmed = confirm(
+                    "⚠️ No se pudo procesar automáticamente este link.\n\n" +
+                    "¿Quieres abrirlo en una nueva pestaña para copiar las coordenadas manualmente?\n\n" +
+                    "(Busca en la barra de direcciones algo como @-0.245197,-79.158230)"
+                );
+                
+                if (userConfirmed) {
+                    window.open(link, '_blank');
+                }
+                
+            } catch (error) {
+                console.error("Error al procesar link:", error);
+                alert("❌ Error al procesar el link: " + error.message);
+            } finally {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            }
         }
 
         // ============================================
