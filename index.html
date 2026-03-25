@@ -169,8 +169,7 @@
                         <div class="flex gap-2">
                             <input type="text" id="mapsLink" 
                                    placeholder="Pega aquí el link (se procesa automáticamente)" 
-                                   class="flex-1 p-3 rounded-xl border border-custom bg-card text-primary focus:ring-2 outline-none text-sm"
-                                   onpaste="procesarLinkAlPegar(event)">
+                                   class="flex-1 p-3 rounded-xl border border-custom bg-card text-primary focus:ring-2 outline-none text-sm">
                             <button onclick="procesarLinkManual()" 
                                     class="bg-coda text-white px-4 py-2 rounded-xl hover:opacity-90">
                                 <i data-lucide="search" class="w-5 h-5"></i>
@@ -184,7 +183,7 @@
                     <!-- Mapa -->
                     <div class="relative">
                         <div id="map" class="bg-gray-200 rounded-xl" style="height: 400px;"></div>
-                        <div class="absolute bottom-2 left-2 glass-effect text-white px-3 py-1 rounded-full text-xs">
+                        <div class="absolute bottom-2 left-2 bg-black/50 text-white px-3 py-1 rounded-full text-xs">
                             📍 Arrastra para mover
                         </div>
                     </div>
@@ -265,9 +264,9 @@
         let geocoder;
 
         // ==========================================
-        // FUNCIÓN PARA MOSTRAR NOTIFICACIONES
+        // NOTIFICACIONES FLOTANTES
         // ==========================================
-        function mostrarNotificacion(mensaje, tipo = 'info') {
+        function mostrarNotificacion(mensaje) {
             const notif = document.createElement('div');
             notif.className = 'toast';
             notif.textContent = mensaje;
@@ -276,17 +275,19 @@
         }
 
         // ==========================================
-        // PROCESAR LINK AUTOMÁTICAMENTE AL PEGAR
+        // DETECTAR PEGADO AUTOMÁTICO
         // ==========================================
-        async function procesarLinkAlPegar(event) {
-            // Esperar a que se complete el pegado
-            setTimeout(async () => {
-                const link = document.getElementById('mapsLink').value.trim();
-                if (link && (link.includes('google.com') || link.includes('goo.gl'))) {
-                    mostrarNotificacion("🔍 Link detectado, procesando...");
-                    await procesarLink(link);
-                }
-            }, 100);
+        function setupPasteDetection() {
+            const input = document.getElementById('mapsLink');
+            input.addEventListener('paste', function(e) {
+                setTimeout(async () => {
+                    const link = input.value.trim();
+                    if (link && (link.includes('google.com') || link.includes('goo.gl') || link.includes('maps.app'))) {
+                        mostrarNotificacion("🔍 Link detectado, procesando...");
+                        await procesarLink(link);
+                    }
+                }, 100);
+            });
         }
 
         // ==========================================
@@ -295,7 +296,7 @@
         async function procesarLinkManual() {
             const link = document.getElementById('mapsLink').value.trim();
             if (!link) {
-                mostrarNotificacion("❌ Pega un link de Google Maps", 'error');
+                mostrarNotificacion("❌ Pega un link de Google Maps");
                 return;
             }
             await procesarLink(link);
@@ -305,12 +306,12 @@
         // FUNCIÓN PRINCIPAL: PROCESAR LINK
         // ==========================================
         async function procesarLink(link) {
-            // Mostrar loading en el input
             const input = document.getElementById('mapsLink');
-            input.classList.add('opacity-50');
+            const originalPlaceholder = input.placeholder;
+            input.placeholder = 'Procesando link...';
             
             try {
-                // PASO 1: Seguir redirección (para links cortos)
+                // PASO 1: Seguir redirección si es link corto
                 let finalUrl = link;
                 if (link.includes('goo.gl') || link.includes('maps.app.goo.gl')) {
                     mostrarNotificacion("🔄 Expandiendo link corto...");
@@ -320,7 +321,7 @@
                         cache: 'no-cache'
                     });
                     finalUrl = response.url;
-                    console.log("📌 URL expandida:", finalUrl);
+                    console.log("URL expandida:", finalUrl);
                 }
                 
                 // PASO 2: Extraer coordenadas
@@ -335,15 +336,15 @@
                     
                     // Limpiar input
                     input.value = '';
-                    mostrarNotificacion("✅ Ubicación encontrada automáticamente!");
+                    mostrarNotificacion("✅ Ubicación encontrada!");
                 } else {
-                    mostrarNotificacion("❌ No se encontraron coordenadas en el link");
+                    mostrarNotificacion("❌ No se encontraron coordenadas");
                 }
             } catch (error) {
                 console.error("Error:", error);
-                mostrarNotificacion("❌ Error al procesar: " + error.message);
+                mostrarNotificacion("❌ Error: " + error.message);
             } finally {
-                input.classList.remove('opacity-50');
+                input.placeholder = originalPlaceholder;
             }
         }
 
@@ -442,6 +443,7 @@
             });
 
             loadTheme();
+            setupPasteDetection(); // ACTIVAR DETECCIÓN DE PEGADO
         }
 
         function setCliente(latLng) {
