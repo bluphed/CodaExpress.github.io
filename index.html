@@ -131,6 +131,11 @@
             from { opacity: 0; transform: translateX(-50%) translateY(20px); }
             to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
+
+        /* iframe oculto para redirecciones */
+        #hiddenFrame {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -250,6 +255,9 @@
         </div>
     </div>
 
+    <!-- iframe oculto para seguir redirecciones (evita CORS) -->
+    <iframe id="hiddenFrame" style="display:none"></iframe>
+
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDFR0mPU-jz-crPgioPus5UEdfeEZ90yk4&libraries=geometry,places&callback=initMap&v=weekly" async defer></script>
 
     <script>
@@ -262,6 +270,7 @@
         let restaurantePos = { lat: -0.245197, lng: -79.158230 };
         let clientePos = null;
         let geocoder;
+        let pendingLink = null;
 
         // ==========================================
         // NOTIFICACIONES FLOTANTES
@@ -284,10 +293,95 @@
                     const link = input.value.trim();
                     if (link && (link.includes('google.com') || link.includes('goo.gl') || link.includes('maps.app'))) {
                         mostrarNotificacion("🔍 Link detectado, procesando...");
-                        await procesarLink(link);
+                        await procesarLinkConIframe(link);
                     }
                 }, 100);
             });
+        }
+
+        // ==========================================
+        // PROCESAR LINK CON IFRAME (EVITA CORS)
+        // ==========================================
+        async function procesarLinkConIframe(link) {
+            // Primero intentar extraer coordenadas directamente del link
+            let coords = extraerCoordenadas(link);
+            if (coords) {
+                moverMapaACoordenadas(coords);
+                return;
+            }
+            
+            // Si es link corto, usar iframe para seguir redirección
+            if (link.includes('goo.gl') || link.includes('maps.app.goo.gl')) {
+                mostrarNotificacion("🔄 Expandiendo link corto...");
+                pendingLink = link;
+                
+                // Crear un iframe que cargue el link
+                const iframe = document.getElementById('hiddenFrame');
+                
+                // Escuchar cuando el iframe termine de cargar
+                iframe.onload = function() {
+                    try {
+                        // Intentar obtener la URL actual del iframe (después de redirección)
+                        let finalUrl;
+                        try {
+                            finalUrl = iframe.contentWindow.location.href;
+                        } catch(e) {
+                            // Por seguridad, no se puede acceder directamente
+                            console.log("No se puede acceder a la URL del iframe por seguridad");
+                            mostrarNotificacion("❌ No se pudo expandir el link automáticamente");
+                            window.open(link, '_blank');
+                            return;
+                        }
+                        
+                        if (finalUrl && finalUrl !== pendingLink) {
+                            console.log("URL final del iframe:", finalUrl);
+                            const coordsFinal = extraerCoordenadas(finalUrl);
+                            if (coordsFinal) {
+                                moverMapaACoordenadas(coordsFinal);
+                                document.getElementById('mapsLink').value = '';
+                            } else {
+                                mostrarNotificacion("❌ No se encontraron coordenadas");
+                            }
+                        }
+                    } catch(e) {
+                        console.error("Error al leer iframe:", e);
+                        mostrarNotificacion("⚠️ No se pudo procesar, abriendo en nueva pestaña");
+                        window.open(link, '_blank');
+                    }
+                    iframe.onload = null;
+                };
+                
+                // Cargar el link en el iframe
+                iframe.src = link;
+                
+                // Timeout por si tarda demasiado
+                setTimeout(() => {
+                    if (iframe.onload) {
+                        iframe.onload = null;
+                        mostrarNotificacion("⚠️ Tiempo de espera agotado");
+                        window.open(link, '_blank');
+                    }
+                }, 5000);
+            } else {
+                // Links largos normales
+                coords = extraerCoordenadas(link);
+                if (coords) {
+                    moverMapaACoordenadas(coords);
+                } else {
+                    mostrarNotificacion("❌ No se encontraron coordenadas en el link");
+                }
+            }
+        }
+
+        // ==========================================
+        // MOVER MAPA A COORDENADAS
+        // ==========================================
+        function moverMapaACoordenadas(coords) {
+            const latLng = new google.maps.LatLng(coords.lat, coords.lng);
+            map.setCenter(latLng);
+            map.setZoom(18);
+            setCliente(latLng);
+            mostrarNotificacion("✅ Ubicación encontrada!");
         }
 
         // ==========================================
@@ -299,53 +393,7 @@
                 mostrarNotificacion("❌ Pega un link de Google Maps");
                 return;
             }
-            await procesarLink(link);
-        }
-
-        // ==========================================
-        // FUNCIÓN PRINCIPAL: PROCESAR LINK
-        // ==========================================
-        async function procesarLink(link) {
-            const input = document.getElementById('mapsLink');
-            const originalPlaceholder = input.placeholder;
-            input.placeholder = 'Procesando link...';
-            
-            try {
-                // PASO 1: Seguir redirección si es link corto
-                let finalUrl = link;
-                if (link.includes('goo.gl') || link.includes('maps.app.goo.gl')) {
-                    mostrarNotificacion("🔄 Expandiendo link corto...");
-                    const response = await fetch(link, { 
-                        method: 'HEAD', 
-                        redirect: 'follow',
-                        cache: 'no-cache'
-                    });
-                    finalUrl = response.url;
-                    console.log("URL expandida:", finalUrl);
-                }
-                
-                // PASO 2: Extraer coordenadas
-                const coords = extraerCoordenadas(finalUrl);
-                
-                if (coords) {
-                    // Mover mapa y marcar cliente
-                    const latLng = new google.maps.LatLng(coords.lat, coords.lng);
-                    map.setCenter(latLng);
-                    map.setZoom(18);
-                    setCliente(latLng);
-                    
-                    // Limpiar input
-                    input.value = '';
-                    mostrarNotificacion("✅ Ubicación encontrada!");
-                } else {
-                    mostrarNotificacion("❌ No se encontraron coordenadas");
-                }
-            } catch (error) {
-                console.error("Error:", error);
-                mostrarNotificacion("❌ Error: " + error.message);
-            } finally {
-                input.placeholder = originalPlaceholder;
-            }
+            await procesarLinkConIframe(link);
         }
 
         // ==========================================
@@ -443,7 +491,7 @@
             });
 
             loadTheme();
-            setupPasteDetection(); // ACTIVAR DETECCIÓN DE PEGADO
+            setupPasteDetection();
         }
 
         function setCliente(latLng) {
