@@ -125,6 +125,7 @@
             border-radius: 30px;
             z-index: 1000;
             animation: slideUp 0.3s ease-out;
+            white-space: nowrap;
         }
 
         @keyframes slideUp {
@@ -132,9 +133,29 @@
             to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
 
-        /* iframe oculto para redirecciones */
-        #hiddenFrame {
-            display: none;
+        .search-box {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--card-bg);
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--color-coda);
+            box-shadow: 0 0 0 2px rgba(222,68,13,0.2);
+        }
+
+        .info-badge {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 8px 12px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
         }
     </style>
 </head>
@@ -165,23 +186,34 @@
                         Ubicación del Pedido
                     </h2>
                     
-                    <!-- Input de link con detección automática -->
-                    <div class="mb-4 p-3 bg-card rounded-xl">
+                    <!-- Campo de búsqueda por dirección -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-secondary mb-2">
+                            <i data-lucide="search" style="color: var(--color-coda);"></i>
+                            Buscar por dirección
+                        </label>
+                        <input type="text" id="searchAddress" 
+                               placeholder="Ej: Av. América 123, Quito" 
+                               class="search-box">
+                    </div>
+                    
+                    <!-- Link de Google Maps CON REDIRECCIONAMIENTO -->
+                    <div class="mb-4 p-3 bg-card rounded-xl border border-custom">
                         <label class="block text-sm font-medium text-secondary mb-2">
                             <i data-lucide="link" style="color: var(--color-coda);"></i>
-                            Link de Google Maps
+                            Link de Google Maps (corto o largo)
                         </label>
                         <div class="flex gap-2">
                             <input type="text" id="mapsLink" 
-                                   placeholder="Pega aquí el link (se procesa automáticamente)" 
+                                   placeholder="https://maps.app.goo.gl/..." 
                                    class="flex-1 p-3 rounded-xl border border-custom bg-card text-primary focus:ring-2 outline-none text-sm">
-                            <button onclick="procesarLinkManual()" 
+                            <button onclick="procesarLinkConRedireccion()" 
                                     class="bg-coda text-white px-4 py-2 rounded-xl hover:opacity-90">
                                 <i data-lucide="search" class="w-5 h-5"></i>
                             </button>
                         </div>
                         <p class="text-xs text-secondary mt-1">
-                            ✅ <strong>Pega automático:</strong> solo copia el link y se procesa solo
+                            ✅ <strong>Lee cualquier link</strong> - sigue redirecciones automáticamente
                         </p>
                     </div>
                     
@@ -189,10 +221,12 @@
                     <div class="relative">
                         <div id="map" class="bg-gray-200 rounded-xl" style="height: 400px;"></div>
                         <div class="absolute bottom-2 left-2 bg-black/50 text-white px-3 py-1 rounded-full text-xs">
-                            📍 Arrastra para mover
+                            📍 Arrastra el marcador rojo para ajustar
                         </div>
                     </div>
-                    <p class="text-xs text-secondary mt-2">* Toca el mapa para marcar la entrega</p>
+                    <p class="text-xs text-secondary mt-2">
+                        * Toca el mapa o arrastra el marcador rojo para ajustar la ubicación exacta
+                    </p>
                 </div>
 
                 <div class="bg-card p-6 rounded-2xl shadow-sm">
@@ -218,6 +252,10 @@
                            class="w-full p-3 rounded-xl border border-custom bg-card text-primary focus:ring-2 outline-none mb-3">
                     <input type="tel" id="telefono" placeholder="Teléfono" 
                            class="w-full p-3 rounded-xl border border-custom bg-card text-primary focus:ring-2 outline-none">
+                    <div class="mt-3 info-badge">
+                        <i data-lucide="info" class="w-3 h-3 inline mr-1"></i>
+                        <span id="direccionConfirmada">📍 Esperando ubicación...</span>
+                    </div>
                 </div>
 
                 <div id="resultadoCard" class="bg-coda p-6 rounded-2xl text-white shadow-lg hidden fade-in">
@@ -255,9 +293,6 @@
         </div>
     </div>
 
-    <!-- iframe oculto para seguir redirecciones (evita CORS) -->
-    <iframe id="hiddenFrame" style="display:none"></iframe>
-
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDFR0mPU-jz-crPgioPus5UEdfeEZ90yk4&libraries=geometry,places&callback=initMap&v=weekly" async defer></script>
 
     <script>
@@ -270,10 +305,10 @@
         let restaurantePos = { lat: -0.245197, lng: -79.158230 };
         let clientePos = null;
         let geocoder;
-        let pendingLink = null;
+        let searchBox;
 
         // ==========================================
-        // NOTIFICACIONES FLOTANTES
+        // NOTIFICACIONES
         // ==========================================
         function mostrarNotificacion(mensaje) {
             const notif = document.createElement('div');
@@ -284,127 +319,49 @@
         }
 
         // ==========================================
-        // DETECTAR PEGADO AUTOMÁTICO
+        // FUNCIÓN PARA SEGUIR REDIRECCIONES CON PROXY
         // ==========================================
-        function setupPasteDetection() {
-            const input = document.getElementById('mapsLink');
-            input.addEventListener('paste', function(e) {
-                setTimeout(async () => {
-                    const link = input.value.trim();
-                    if (link && (link.includes('google.com') || link.includes('goo.gl') || link.includes('maps.app'))) {
-                        mostrarNotificacion("🔍 Link detectado, procesando...");
-                        await procesarLinkConIframe(link);
-                    }
-                }, 100);
-            });
-        }
-
-        // ==========================================
-        // PROCESAR LINK CON IFRAME (EVITA CORS)
-        // ==========================================
-        async function procesarLinkConIframe(link) {
-            // Primero intentar extraer coordenadas directamente del link
-            let coords = extraerCoordenadas(link);
-            if (coords) {
-                moverMapaACoordenadas(coords);
-                return;
-            }
+        async function seguirRedireccion(link) {
+            // Usamos un servicio proxy CORS gratuito (allorigins)
+            const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(link);
             
-            // Si es link corto, usar iframe para seguir redirección
-            if (link.includes('goo.gl') || link.includes('maps.app.goo.gl')) {
-                mostrarNotificacion("🔄 Expandiendo link corto...");
-                pendingLink = link;
+            try {
+                const response = await fetch(proxyUrl);
+                const data = await response.json();
                 
-                // Crear un iframe que cargue el link
-                const iframe = document.getElementById('hiddenFrame');
-                
-                // Escuchar cuando el iframe termine de cargar
-                iframe.onload = function() {
-                    try {
-                        // Intentar obtener la URL actual del iframe (después de redirección)
-                        let finalUrl;
-                        try {
-                            finalUrl = iframe.contentWindow.location.href;
-                        } catch(e) {
-                            // Por seguridad, no se puede acceder directamente
-                            console.log("No se puede acceder a la URL del iframe por seguridad");
-                            mostrarNotificacion("❌ No se pudo expandir el link automáticamente");
-                            window.open(link, '_blank');
-                            return;
-                        }
-                        
-                        if (finalUrl && finalUrl !== pendingLink) {
-                            console.log("URL final del iframe:", finalUrl);
-                            const coordsFinal = extraerCoordenadas(finalUrl);
-                            if (coordsFinal) {
-                                moverMapaACoordenadas(coordsFinal);
-                                document.getElementById('mapsLink').value = '';
-                            } else {
-                                mostrarNotificacion("❌ No se encontraron coordenadas");
-                            }
-                        }
-                    } catch(e) {
-                        console.error("Error al leer iframe:", e);
-                        mostrarNotificacion("⚠️ No se pudo procesar, abriendo en nueva pestaña");
-                        window.open(link, '_blank');
+                if (data && data.contents) {
+                    // Extraer la URL final de la respuesta
+                    const finalUrl = data.contents.match(/location\.href\s*=\s*"([^"]+)"/)?.[1] || 
+                                     data.contents.match(/window\.location\.replace\("([^"]+)"\)/)?.[1] ||
+                                     data.contents.match(/URL\s*=\s*"([^"]+)"/)?.[1];
+                    
+                    if (finalUrl) {
+                        return finalUrl;
                     }
-                    iframe.onload = null;
-                };
-                
-                // Cargar el link en el iframe
-                iframe.src = link;
-                
-                // Timeout por si tarda demasiado
-                setTimeout(() => {
-                    if (iframe.onload) {
-                        iframe.onload = null;
-                        mostrarNotificacion("⚠️ Tiempo de espera agotado");
-                        window.open(link, '_blank');
+                    
+                    // Si no encontramos la URL, buscar coordenadas en el contenido
+                    const coordsMatch = data.contents.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+                    if (coordsMatch) {
+                        return `https://www.google.com/maps/@${coordsMatch[1]},${coordsMatch[2]},15z`;
                     }
-                }, 5000);
-            } else {
-                // Links largos normales
-                coords = extraerCoordenadas(link);
-                if (coords) {
-                    moverMapaACoordenadas(coords);
-                } else {
-                    mostrarNotificacion("❌ No se encontraron coordenadas en el link");
                 }
+                return null;
+            } catch (error) {
+                console.error("Error en proxy:", error);
+                return null;
             }
         }
 
         // ==========================================
-        // MOVER MAPA A COORDENADAS
+        // FUNCIÓN PARA EXTRAER COORDENADAS DE URL
         // ==========================================
-        function moverMapaACoordenadas(coords) {
-            const latLng = new google.maps.LatLng(coords.lat, coords.lng);
-            map.setCenter(latLng);
-            map.setZoom(18);
-            setCliente(latLng);
-            mostrarNotificacion("✅ Ubicación encontrada!");
-        }
-
-        // ==========================================
-        // PROCESAR LINK MANUAL (BOTÓN)
-        // ==========================================
-        async function procesarLinkManual() {
-            const link = document.getElementById('mapsLink').value.trim();
-            if (!link) {
-                mostrarNotificacion("❌ Pega un link de Google Maps");
-                return;
-            }
-            await procesarLinkConIframe(link);
-        }
-
-        // ==========================================
-        // EXTRAER COORDENADAS DE URL
-        // ==========================================
-        function extraerCoordenadas(url) {
+        function extraerCoordenadasDeUrl(url) {
             const patrones = [
                 /@(-?\d+\.\d+),(-?\d+\.\d+)/,
                 /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/,
                 /[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/,
-                /[?&]ll=(-?\d+\.\d+),(-?\d+\.\d+)/
+                /[?&]ll=(-?\d+\.\d+),(-?\d+\.\d+)/,
+                /\/place\/[^\/]*@(-?\d+\.\d+),(-?\d+\.\d+)/
             ];
             
             for (let patron of patrones) {
@@ -412,12 +369,148 @@
                 if (match) {
                     const lat = parseFloat(match[1]);
                     const lng = parseFloat(match[2]);
-                    if (!isNaN(lat) && !isNaN(lng)) {
+                    if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
                         return { lat, lng };
                     }
                 }
             }
             return null;
+        }
+
+        // ==========================================
+        // FUNCIÓN PRINCIPAL: PROCESAR LINK CON REDIRECCIÓN
+        // ==========================================
+        async function procesarLinkConRedireccion() {
+            const linkInput = document.getElementById('mapsLink');
+            const link = linkInput.value.trim();
+            
+            if (!link) {
+                mostrarNotificacion("❌ Pega un link de Google Maps");
+                return;
+            }
+
+            // Mostrar loading
+            const btn = event?.currentTarget;
+            const originalHtml = btn ? btn.innerHTML : '🔍';
+            if (btn) {
+                btn.innerHTML = '<span class="loading"></span>';
+                btn.disabled = true;
+            }
+            
+            mostrarNotificacion("🔍 Procesando link...");
+
+            try {
+                let finalUrl = link;
+                let coords = null;
+                
+                // 1. Primero intentar extraer coordenadas directamente
+                coords = extraerCoordenadasDeUrl(link);
+                
+                // 2. Si es link corto, seguir redirección
+                if (!coords && (link.includes('goo.gl') || link.includes('maps.app.goo.gl'))) {
+                    mostrarNotificacion("🔄 Siguiendo redirección...");
+                    const expandedUrl = await seguirRedireccion(link);
+                    if (expandedUrl) {
+                        finalUrl = expandedUrl;
+                        coords = extraerCoordenadasDeUrl(finalUrl);
+                        console.log("URL expandida:", finalUrl);
+                    }
+                }
+                
+                // 3. Si tenemos coordenadas, mover mapa
+                if (coords) {
+                    const latLng = new google.maps.LatLng(coords.lat, coords.lng);
+                    map.setCenter(latLng);
+                    map.setZoom(18);
+                    setCliente(latLng);
+                    linkInput.value = '';
+                    mostrarNotificacion("✅ Ubicación encontrada!");
+                } else {
+                    // 4. Si no hay coordenadas, intentar buscar por dirección si el link tiene texto
+                    const matchPlace = finalUrl.match(/\/place\/([^\/]+)/);
+                    if (matchPlace) {
+                        const lugar = decodeURIComponent(matchPlace[1].replace(/\+/g, ' '));
+                        document.getElementById('searchAddress').value = lugar;
+                        // Disparar búsqueda automática
+                        buscarDireccionEnMapa(lugar);
+                        linkInput.value = '';
+                        mostrarNotificacion("🔍 Buscando: " + lugar);
+                    } else {
+                        mostrarNotificacion("⚠️ No se encontraron coordenadas en el link");
+                    }
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                mostrarNotificacion("❌ Error al procesar el link");
+            } finally {
+                if (btn) {
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                }
+            }
+        }
+
+        // ==========================================
+        // BUSCAR DIRECCIÓN EN EL MAPA
+        // ==========================================
+        function buscarDireccionEnMapa(direccion) {
+            geocoder.geocode({ address: direccion }, (results, status) => {
+                if (status === 'OK' && results[0]) {
+                    const location = results[0].geometry.location;
+                    map.setCenter(location);
+                    map.setZoom(18);
+                    setCliente(location);
+                    mostrarNotificacion("✅ Dirección encontrada!");
+                } else {
+                    mostrarNotificacion("❌ No se encontró la dirección");
+                }
+            });
+        }
+
+        // ==========================================
+        // ACTUALIZAR DIRECCIÓN CONFIRMADA
+        // ==========================================
+        async function actualizarDireccionConfirmada(latLng) {
+            try {
+                const results = await new Promise((resolve, reject) => {
+                    geocoder.geocode({ location: latLng }, (results, status) => {
+                        if (status === 'OK' && results[0]) {
+                            resolve(results[0]);
+                        } else {
+                            reject(new Error('No se pudo obtener dirección'));
+                        }
+                    });
+                });
+                
+                const direccion = results.formatted_address;
+                document.getElementById('direccionConfirmada').innerHTML = `📍 <strong>Dirección exacta:</strong> ${direccion}`;
+                return direccion;
+            } catch (error) {
+                document.getElementById('direccionConfirmada').innerHTML = `📍 Coordenadas: ${latLng.lat().toFixed(6)}, ${latLng.lng().toFixed(6)}`;
+                return null;
+            }
+        }
+
+        // ==========================================
+        // CONFIGURAR BÚSQUEDA POR DIRECCIÓN
+        // ==========================================
+        function setupSearchBox() {
+            const input = document.getElementById('searchAddress');
+            searchBox = new google.maps.places.Autocomplete(input, {
+                types: ['address'],
+                componentRestrictions: { country: 'ec' }
+            });
+            
+            searchBox.addListener('place_changed', () => {
+                const place = searchBox.getPlace();
+                if (place && place.geometry && place.geometry.location) {
+                    const latLng = place.geometry.location;
+                    map.setCenter(latLng);
+                    map.setZoom(18);
+                    setCliente(latLng);
+                    mostrarNotificacion("✅ Dirección encontrada!");
+                }
+            });
         }
 
         // ==========================================
@@ -452,7 +545,7 @@
         }
 
         // ==========================================
-        // MAPA
+        // MAPA CON MARCADOR ARRASTRABLE
         // ==========================================
         function initMap() {
             map = new google.maps.Map(document.getElementById("map"), {
@@ -470,46 +563,58 @@
                 icon: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png'
             });
 
-            map.addListener("click", (e) => setCliente(e.latLng));
+            markerCliente = new google.maps.Marker({
+                position: null,
+                map: null,
+                title: "Cliente - Arrástrame para ajustar",
+                icon: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
+                draggable: true
+            });
+            
+            markerCliente.addListener('dragend', async () => {
+                const pos = markerCliente.getPosition();
+                clientePos = { lat: pos.lat(), lng: pos.lng() };
+                await actualizarDireccionConfirmada(pos);
+                mostrarNotificacion("📍 Ubicación ajustada");
+            });
+
+            map.addListener("click", async (e) => {
+                setCliente(e.latLng);
+                await actualizarDireccionConfirmada(e.latLng);
+                mostrarNotificacion("📍 Ubicación marcada!");
+            });
 
             document.getElementById('localSelect').addEventListener('change', function() {
                 if (this.value === 'cremita') {
                     restaurantePos = { lat: -0.245197, lng: -79.158230 };
                     markerRestaurante.setPosition(restaurantePos);
                     map.panTo(restaurantePos);
+                    mostrarNotificacion("📍 Local cambiado a La Cremita");
                 } else if (this.value === 'custom') {
-                    navigator.geolocation.getCurrentPosition(
-                        pos => {
-                            restaurantePos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                            markerRestaurante.setPosition(restaurantePos);
-                            map.setCenter(restaurantePos);
-                            map.setZoom(16);
-                        },
-                        () => alert("No se pudo obtener ubicación")
-                    );
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(
+                            pos => {
+                                restaurantePos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                                markerRestaurante.setPosition(restaurantePos);
+                                map.setCenter(restaurantePos);
+                                map.setZoom(16);
+                                mostrarNotificacion("📍 Local actualizado a tu ubicación");
+                            },
+                            () => alert("No se pudo obtener ubicación")
+                        );
+                    }
                 }
             });
 
             loadTheme();
-            setupPasteDetection();
+            setupSearchBox();
         }
 
         function setCliente(latLng) {
-            if (markerCliente) {
-                markerCliente.setPosition(latLng);
-            } else {
-                markerCliente = new google.maps.Marker({
-                    position: latLng,
-                    map: map,
-                    title: "Cliente",
-                    icon: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
-                    draggable: true
-                });
-                markerCliente.addListener('dragend', () => {
-                    clientePos = { lat: markerCliente.getPosition().lat(), lng: markerCliente.getPosition().lng() };
-                });
-            }
+            markerCliente.setPosition(latLng);
+            markerCliente.setMap(map);
             clientePos = { lat: latLng.lat(), lng: latLng.lng() };
+            actualizarDireccionConfirmada(latLng);
         }
 
         // ==========================================
@@ -517,7 +622,7 @@
         // ==========================================
         function calcular() {
             if (!clientePos) {
-                alert("Marca la ubicación en el mapa");
+                alert("Marca la ubicación en el mapa o busca una dirección");
                 return;
             }
 
@@ -560,6 +665,7 @@
             const costo = document.getElementById('costoFinal').innerText;
             const dist = document.getElementById('distanciaTexto').innerText;
             const local = document.getElementById('localSelect').options[document.getElementById('localSelect').selectedIndex].text;
+            const direccionTexto = document.getElementById('direccionConfirmada').innerText;
             const maps = `https://www.google.com/maps?q=${clientePos.lat},${clientePos.lng}`;
             const tiempo = document.getElementById('tiempoEstimado').innerText.replace('clock', '').trim();
 
@@ -567,6 +673,7 @@
                 `*Local:* ${local}%0A` +
                 `*Cliente:* ${nombre}%0A` +
                 `*Teléfono:* ${tel}%0A%0A` +
+                `*${direccionTexto}*%0A%0A` +
                 `*Costo:* ${costo}%0A` +
                 `*${dist}*%0A` +
                 `*Tiempo:* ${tiempo}%0A%0A` +
