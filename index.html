@@ -37,7 +37,7 @@
             font-family: system-ui, -apple-system, sans-serif;
         }
 
-        /* Pantalla de carga con logo Coda Express */
+        /* PANTALLA DE CARGA ÚNICA - DISEÑO LIMPIO */
         .splash-screen {
             position: fixed;
             top: 0;
@@ -50,62 +50,63 @@
             justify-content: center;
             align-items: center;
             z-index: 9999;
-            transition: opacity 0.5s ease;
+            transition: opacity 0.5s ease-out;
         }
         
         .dark-mode .splash-screen {
             background: #0f172a;
         }
         
+        /* Logo - cuadro naranja sin bordes blancos */
         .splash-logo {
-            width: 120px;
-            height: 120px;
-            background: #DE440D;
-            border-radius: 30px;
+            width: 140px;
+            height: 140px;
+            background: var(--color-coda);
+            border-radius: 35px;
             display: flex;
             justify-content: center;
             align-items: center;
-            margin-bottom: 20px;
-            animation: bounce 1s ease-in-out;
-            box-shadow: 0 10px 25px rgba(222,68,13,0.3);
+            box-shadow: 0 10px 30px rgba(222,68,13,0.3);
+            animation: pulse 1.2s ease-in-out infinite;
         }
         
         .splash-logo svg {
-            width: 70px;
-            height: 70px;
+            width: 80px;
+            height: 80px;
             color: white;
         }
         
         .splash-title {
-            font-size: 28px;
+            font-size: 32px;
             font-weight: bold;
-            color: #DE440D;
+            color: var(--color-coda);
             letter-spacing: 2px;
+            margin-top: 24px;
         }
         
         .splash-subtitle {
             font-size: 14px;
-            color: #64748b;
+            color: #94a3b8;
             margin-top: 8px;
         }
         
         .splash-loader {
             width: 40px;
             height: 40px;
+            margin-top: 40px;
             border: 3px solid #e2e8f0;
-            border-top-color: #DE440D;
+            border-top-color: var(--color-coda);
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin-top: 30px;
         }
         
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
         
-        @keyframes bounce {
+        @keyframes pulse {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+            50% { transform: scale(1.02); }
         }
         
         .hidden {
@@ -202,7 +203,7 @@
         .header-logo {
             width: 40px;
             height: 40px;
-            background: #DE440D;
+            background: var(--color-coda);
             border-radius: 12px;
             display: flex;
             justify-content: center;
@@ -291,10 +292,10 @@
 </head>
 <body>
 
-    <!-- PANTALLA DE CARGA CON LOGO CODA EXPRESS -->
+    <!-- PANTALLA DE CARGA ÚNICA - LOGO EN CUADRO NARANJA SIN BORDES -->
     <div id="splashScreen" class="splash-screen">
         <div class="splash-logo">
-            <svg xmlns="http://www.w3.org/2000/svg" width="70" height="70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                 <polyline points="14 2 14 8 20 8"/>
                 <line x1="16" y1="13" x2="8" y2="13"/>
@@ -317,7 +318,7 @@
         <div class="max-w-4xl mx-auto p-4 md:p-8">
             <header class="flex items-center justify-between mb-8 mt-12">
                 <div class="flex items-center gap-3">
-                    <!-- LOGO EN EL ENCABEZADO (reemplaza el camión) -->
+                    <!-- LOGO EN EL ENCABEZADO -->
                     <div class="header-logo">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -395,7 +396,7 @@
                     splash.style.display = 'none';
                     main.classList.add('visible');
                 }, 500);
-            }, 1500);
+            }, 1800);
         });
 
         function mostrarNotificacion(msg) {
